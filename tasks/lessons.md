@@ -132,6 +132,25 @@ before first reliance, (b) input validation that catches convention mistakes
 mechanically (the kurtosis<1 guard), and (c) a regression test encoding the
 directional behavior the source requires (diverse trials ⇒ higher bar).
 
+### 2026-07-21 — Fleet digests are testimony, not evidence: spot-check numbers before they become load-bearing
+
+**Context:** The batch-4 synthesis quoted Exchange-720 figures from a reading
+agent's digest (NLinear 0.409, Repeat 0.601) as its flagship "linear beats
+deep on financial data" exhibit. An independent checker pass against the
+corpus PDF refuted them: actual NLinear 1.033 / Repeat 0.823 MSE — "0.601"
+was DLinear's *MAE* — and the "N-HiTS loses to NLinear/Repeat" comparison was
+inverted (only DLinear 0.643 beats N-HiTS 0.798 there).
+**Lesson:** A reading agent can mix table columns (MSE vs MAE) or paper
+versions, and the error propagates silently into a synthesis where it becomes
+a headline exhibit. The *direction* survived here; the specific numbers did
+not — the dangerous case, because a plausible direction hides a wrong number.
+**Apply:** Before any number from a subagent digest becomes load-bearing in a
+synthesis or finding, have an independent checker re-open the source and
+confirm the exact cell (metric, row, version). Restrict load-bearing exhibits
+to checker-verified figures and mark the rest as digest-sourced. This is the
+documentation-layer instance of maker ≠ checker — it has now paid off in two
+consecutive batches (DSR formula in batch 3, Zeng figures in batch 4).
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

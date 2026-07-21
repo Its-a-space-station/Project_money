@@ -72,6 +72,20 @@ None. Loops, when built, produce findings and reports only — never actions.
 
 ## Last checkpoint
 
+- 2026-07-21 — **Information batch 4 ingested** (26 time-series-forecasting
+  papers, five verify-and-extract agents + one independent checker):
+  [docs/ts_forecasting_integration.md](docs/ts_forecasting_integration.md).
+  The playbook's **unadopted** v2.1 forecasting layer passed its source
+  audit (third successful independent playbook audit): 1 hard defect
+  (Time-LLM listed as a probabilistic source; it is point-only), 1 cross-doc
+  inconsistency (ARIMA-vs-DLinear null ordering), 9 wording + 4 attribution
+  corrections — all recorded as **adoption prerequisites**, since the layer
+  stays unadopted. Checker pass on the synthesis corrected two
+  digest-sourced numbers before reliance (lesson recorded). Outputs: V1–V8
+  verifier build items queued alongside the batch-3 follow-ons; fleet-ops
+  updates; pre-specified (still-gated) forecasting protocol. Ungating
+  verdict: **sharpens, does not reorder** the agreed 1–4 plan. Suite: **170
+  tests green**. Not yet committed.
 - 2026-07-21 — **Session handoff written**: [HANDOFF.md](HANDOFF.md) — full
   session summary (bootstrap → tooling build + adversarial review → three
   information batches → gate corrections) and next steps. Information intake

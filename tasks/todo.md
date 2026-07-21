@@ -9,8 +9,8 @@
 
 - [~] **Await further information uploads from the user** and ingest each with
       the established pattern (agent fleet → synthesis → cross-check → repo
-      doc → commit on approval). Three batches complete so far (papers,
-      trading books, ML shelf).
+      doc → commit on approval). Four batches complete so far (papers,
+      trading books, ML shelf, TS forecasting).
 - [!] On the user's **end-of-information signal**: record the agreed 1–4
       ungating in STATE.md, finalize the MVP spec (H1–H3 seeds,
       delisting-aware panel), begin calibration-first execution
@@ -142,6 +142,47 @@ mismatched the source). Follow-on build items (PSR, ROPE gate, corrected
 permutation estimator, fold-split ranking, calibration harness, CPCV/PBO,
 conformal, CUSUM monitors) are catalogued in the integration doc §3 —
 sequenced for when validation work resumes, not blocking the gates.
+
+## Information intake (batch 4 — time-series forecasting papers: COMPLETE)
+
+- [x] Five verify-and-extract agents over exclusive clusters of the 26-PDF
+      corpus (`~/Documents/Papers on Time Series Forecasting/`): LTSF
+      transformers; linear/MLP critique; foundation/LLM/scaling;
+      representation/graph/exogenous; benchmarking/meta (incl. AIRS-Bench).
+      Pattern chosen because the corpus underlies the playbook's **unadopted**
+      v2.1 forecasting layer (six policy docs) — audit before any reliance.
+- [x] Wrote [docs/ts_forecasting_integration.md](../docs/ts_forecasting_integration.md):
+      layer survives its source audit (third successful independent playbook
+      audit) with 1 hard defect (Time-LLM listed as probabilistic source;
+      point-only), 1 cross-doc inconsistency (ARIMA-vs-DLinear null order),
+      9 wording/taxonomy + 4 attribution corrections — recorded as adoption
+      prerequisites; 8 verifier build items (V1–V8) + fleet-ops updates +
+      pre-specified (gated) forecasting protocol.
+- [x] **Maker≠checker on the synthesis itself**: independent checker
+      spot-checked 10 headline claims against the PDFs — 8 confirmed, 2
+      corrected (a digest had mixed MSE/MAE columns on Zeng Exchange-720 and
+      inverted one comparison). Doc fixed; load-bearing figures now
+      checker-verified only; lesson added to `tasks/lessons.md`.
+- [x] Ungating re-rank check: **sharpens, does not reorder** the agreed
+      (unrecorded) 1–4 plan; strengthens the case that ML/forecasting stays
+      deferred (baselines first — now externally evidenced). Recording still
+      waits on the user's end-of-information signal.
+
+### Review — batch 4 (2026-07-21)
+
+The verify-and-extract pattern paid off for a second consecutive batch, this
+time in both directions: the playbook's forecasting layer held (no fabricated
+numbers across ~60 claims; one hard defect + taxonomy/attribution
+corrections queued as adoption prerequisites), and the checker pass caught a
+numeric-extraction defect in **our own fleet's digest** before it hardened
+into a flagship exhibit. Best finds: the corpus is a live demonstration of
+baselines-as-nulls (Informer/Autoformer's SOTA collapsing to DLinear;
+drop-last quantified at ~17%; TFB's NASDAQ row where VAR beats every deep
+SOTA); the D-NOW verifier queue (V1–V8) extends the backbone independently
+of any forecasting decision; and the foundation-model contamination audit
+gives us per-model vintage checks to demand before any zero-shot number is
+ever cited. Suite: 170 tests green after all edits. Not yet committed —
+awaiting user approval.
 
 ## Future (gated — not authorized by this list)
 
