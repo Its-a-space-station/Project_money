@@ -8,11 +8,14 @@
 
 ## Phase
 
-**Bootstrap — documentation only.** Project_money has adopted the Decision Systems
-Playbook (tailored bootstrap): governance docs, canonical schemas, templates,
-checklists, and a project blueprint are in place, and the quant-research
-philosophy is merged into `CLAUDE.md`. **No implementation code, no provider
-adapters, no broker integration exists or is permitted yet.**
+**Tooling build (research-tooling code authorized 2026-07-20).** The playbook
+bootstrap is complete and the first tooling code exists under `src/project_money/`
+with a green deterministic test suite (`tests/`, 81 tests): verification backbone
+(invariants incl. lookahead detector, metrics + deflated Sharpe, walk-forward,
+prequential codelength, evaluation cascade), leakage/vintage auditor,
+metric-falsification harness, hypothesis ledger + tabu memory, MDL complexity
+gate. **Still no provider adapters, no broker integration, no execution paths —
+those remain separately gated.**
 
 ## Current MVP scope
 
@@ -29,6 +32,14 @@ adapters, no broker integration exists or is permitted yet.**
 - 2026-07-20 — Adopt the Decision Systems Playbook via *tailored bootstrap* and
   *merge* the quant-research philosophy into `CLAUDE.md` (governance layer +
   domain layer in one file; safety rules win on conflict).
+- 2026-07-20 — **Build all three tool packages** from
+  [docs/agent_tooling_synthesis.md](docs/agent_tooling_synthesis.md) §4
+  (user-selected: Pkg 1 verification backbone, Pkg 2 research loop, Pkg 3
+  infra & memory).
+- 2026-07-20 — **Scope guard partially lifted: research-tooling code is
+  authorized** (harnesses, checkers, ledgers, registries, tests). Still
+  excluded and separately gated: provider/data adapters, broker code, any
+  execution path, live scheduling. No secrets; deterministic tests only.
 
 ## Safety rules (in force)
 
@@ -41,7 +52,8 @@ adapters, no broker integration exists or is permitted yet.**
 
 ## Non-goals
 
-- No implementation code, provider/broker adapters, or execution paths (bootstrap).
+- No provider/data adapters, broker code, or execution paths (each separately
+  gated; research-tooling code is the only authorized code).
 - No autonomous financial action anywhere in scope.
 - No v2 / v2.1 / v2.2 playbook layers (forecasting, macro, object-memory) adopted
   yet — they remain in the shared playbook and can be pulled in later if authorized.
@@ -63,7 +75,15 @@ None. Loops, when built, produce findings and reports only — never actions.
 - 2026-07-20 — Playbook adopted; docs self-consistent; schemas set to
   `project_money`; scaffolding and blueprint written. Original `.rtf` brief
   deleted (absorbed into `CLAUDE.md`); all inherited docs localized to
-  Project_money (no sibling-system references remain).
+  Project_money (no sibling-system references remain). First commit pushed to
+  GitHub (`origin/main`).
+- 2026-07-20 — **Tooling pre-phase:** six-agent mechanism-level review of the
+  38-paper coding-agents corpus completed;
+  [docs/agent_tooling_synthesis.md](docs/agent_tooling_synthesis.md) written
+  (10 design principles, 11 proposed tools in 3 packages, finance-specific
+  cautions). Independent cross-check confirmed the playbook's 2026-07-19 paper
+  map with no contradictions. Awaiting user selection of build packages; code
+  items remain gated behind the bootstrap scope guard.
 
 ## Next recommended action
 

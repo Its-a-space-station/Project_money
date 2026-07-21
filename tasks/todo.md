@@ -12,6 +12,37 @@
 - [x] Write `STATE.md`, `tasks/`, `README.md`, `AGENTS.md`, blueprint, `.gitignore`.
 - [x] Verify docs are internally consistent (cross-links resolve; canonical labels).
 
+## Tooling pre-phase (authorized 2026-07-20): papers synthesis → tool proposals
+
+- [x] Deep-read the 38-paper corpus in "~/Documents/Papers on Coding/" via six
+      parallel thematic agents (mechanism-level, tool-design mandate).
+- [x] Cross-check agent digests against the playbook's
+      `reference_papers_coding_agents.md` — independent verification: **no
+      contradictions; every checkable headline confirmed** (see synthesis §2).
+- [x] Write [docs/agent_tooling_synthesis.md](../docs/agent_tooling_synthesis.md):
+      verdict, 10 design principles, 11 proposed tools in 3 packages,
+      finance-specific cautions, cluster digests, provenance map.
+- [x] Present ranked, paper-backed tool proposals for user selection — user
+      selected **all three packages** and lifted the scope guard for
+      research-tooling code (providers/brokers/execution remain gated).
+
+## Tool build (authorized 2026-07-20; synthesis §4 is the spec)
+
+- [x] Package 1 — verification backbone (code + tests): invariants (incl.
+      whole-window lookahead check), metrics + deflated Sharpe, walk-forward
+      (purge/embargo), prequential codelength, cascade runner, vintage/leakage
+      auditor, known-zero controls + falsification harness. **81 tests, all
+      green, deterministic across runs.**
+- [x] Package 2 core code — hypothesis ledger (append-only JSONL trial
+      registry, tabu memory, canonical-status enforcement, expected-max-null-
+      Sharpe bar) + MDL gate (knob hurdle, permuted-null COMP, noisy-knob
+      jitter). Tested in the same suite.
+- [ ] Package 2 config — staged-pipeline skill + subagent role definitions;
+      trajectory-judge prompt + no-unverified-confirmation hook.
+- [ ] Package 3 — data-tool registry framework (no live adapters), tool-factory
+      validation gate, object-memory/ordering rules doc, gated skill/lessons
+      evolution loop config.
+
 ## Deterministic MVP (deferred — needs authorization to start)
 
 - [!] Define deterministic, reproducible criteria for one `object_type` (e.g. `equity`)

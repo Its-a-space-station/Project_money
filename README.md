@@ -37,6 +37,10 @@ Then the supporting policies in [docs/](docs/), the data shapes in
 [checklists/](checklists/), and the per-project plan in
 [project_blueprints/](project_blueprints/).
 
+For the tooling roadmap derived from the coding-agents literature (38 papers,
+six-agent mechanism-level review), see
+[docs/agent_tooling_synthesis.md](docs/agent_tooling_synthesis.md).
+
 ## Repository layout
 
 ```text

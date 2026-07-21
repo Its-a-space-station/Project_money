@@ -44,3 +44,4 @@ venv/
 data/
 outputs/
 reports/*.local.*
+*.egg-info/
