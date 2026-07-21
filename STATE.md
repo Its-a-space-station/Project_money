@@ -82,8 +82,15 @@ None. Loops, when built, produce findings and reports only — never actions.
   [docs/agent_tooling_synthesis.md](docs/agent_tooling_synthesis.md) written
   (10 design principles, 11 proposed tools in 3 packages, finance-specific
   cautions). Independent cross-check confirmed the playbook's 2026-07-19 paper
-  map with no contradictions. Awaiting user selection of build packages; code
-  items remain gated behind the bootstrap scope guard.
+  map with no contradictions.
+- 2026-07-20 — **All three packages built.** Pkg 1 verification backbone +
+  Pkg 2 cores (commit `e32a967`), then the config layer: subagent roles,
+  research-pipeline + trajectory-judge skills, finding-promotion hooks,
+  tool registry, tool-factory admission gate, memory/ordering helpers,
+  object-memory + skill-evolution policy docs. An 82-agent adversarial review
+  (4 lenses, 2-skeptic verification) confirmed 32 defects — all fixed with
+  regression tests; **159 tests green, deterministic**. Deferred: TOOLMAKER-
+  style build harness (admission gate only). Not yet committed.
 
 ## Next recommended action
 

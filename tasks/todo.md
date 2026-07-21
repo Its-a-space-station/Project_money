@@ -37,11 +37,41 @@
       registry, tabu memory, canonical-status enforcement, expected-max-null-
       Sharpe bar) + MDL gate (knob hurdle, permuted-null COMP, noisy-knob
       jitter). Tested in the same suite.
-- [ ] Package 2 config — staged-pipeline skill + subagent role definitions;
-      trajectory-judge prompt + no-unverified-confirmation hook.
-- [ ] Package 3 — data-tool registry framework (no live adapters), tool-factory
-      validation gate, object-memory/ordering rules doc, gated skill/lessons
-      evolution loop config.
+- [x] Package 2 config: `.claude/agents/` (data-navigator, strategy-analyst,
+      research-validator, research-skeptic), `.claude/skills/research-pipeline`,
+      `.claude/skills/trajectory-judge`, finding-promotion hooks
+      (`hooks/validate_finding.py` + `hooks/guard_findings_bash.py` +
+      `.claude/settings.json` + `findings/`).
+- [x] Package 3: `src/project_money/registry` (typed read-only tool registry,
+      two-tier docs, ranked search), `src/project_money/toolfactory` (held-out
+      admission gate incl. lookahead hook), `src/project_money/memory`
+      (stable ids, canonical sort, order-invariant digest),
+      `docs/object_memory_and_ordering.md`, `docs/skill_evolution_policy.md`.
+- [x] Adversarial review of the config layer (4 lenses × 2-skeptic
+      verification, 82 agents): 32 confirmed findings — ALL fixed with
+      regression tests; 7 refuted. Suite: **159 tests green, deterministic.**
+
+## Review — config layer (2026-07-20)
+
+The adversarial workflow confirmed real defects the unit tests missed, all
+now fixed + regression-tested: the promotion hook failed OPEN on exceptions,
+relative/case-variant paths, Bash writes, missing `maker`, any-file
+"artifacts", and `*README.md` suffixes (now: fail-closed wrapper, normalized
+root-anchored paths, Bash guard hook, maker required, artifacts must be JSON
+under `outputs/`, exact README exemption); `canonical_sort` ordered numbers
+as JSON strings; a constraint-free admission case passed a known-wrong tool;
+default-omission dodged the held-out check; bool matched int in known-answer
+tests; array outputs crashed the gate; the registry's forbidden-token screen
+missed entry/exit/recommendation and param names; the pipeline skill leaked
+promotion thresholds to the maker (firewall restored); data-navigator had
+Bash despite a read-only mandate (removed). Deferred by design: the
+TOOLMAKER-style build harness (admission gate only for now, next bullet).
+
+## Future (gated — not authorized by this list)
+
+- [!] TOOLMAKER-style tool *build* harness (checkpointed sandbox build with
+      diagnose→reimplement→summarise memory) — deferred; only the admission
+      gate exists (`src/project_money/toolfactory`). Requires authorization.
 
 ## Deterministic MVP (deferred — needs authorization to start)
 

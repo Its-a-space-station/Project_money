@@ -85,6 +85,22 @@ against in research.
 stand-out *rate*, never a single-seed percentile assertion. Never fix such a
 test by picking a friendlier seed.
 
+### 2026-07-20 — An enforcement boundary is an attack surface: fail closed, normalize paths, cover every write route
+
+**Context:** Adversarial review of the finding-promotion hook found six
+independent bypasses (exception → fail-open, `./`-relative paths, case
+variants on APFS, subdir cwd, Bash shell writes, `*README.md` suffix
+exemption) plus a vacuous-evidence hole (any existing file as "artifact").
+**Lesson:** A gate's unit tests proving it blocks the obvious bad case say
+nothing about the routes *around* it. Gates need: fail-closed error handling,
+normalized root-anchored path matching, coverage of every tool that can
+produce the guarded effect, and evidence checks on content (parseable
+artifact under the expected directory), not mere existence.
+**Apply:** Bracket-test the gate itself AND red-team it (the review's
+"cheat any way you can" pass found what bracket tests missed). Any new hook
+or gate gets the same adversarial pass before it is trusted. This mirrors the
+corpus finding that verifier-hardening is the core design, not polish.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.
