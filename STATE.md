@@ -72,6 +72,12 @@ None. Loops, when built, produce findings and reports only — never actions.
 
 ## Last checkpoint
 
+- 2026-07-21 — **Session handoff written**: [HANDOFF.md](HANDOFF.md) — full
+  session summary (bootstrap → tooling build + adversarial review → three
+  information batches → gate corrections) and next steps. Information intake
+  is ONGOING (user still uploading); the agreed 1–4 ungating remains
+  deliberately unrecorded until the user's end-of-information signal. Suite:
+  170 tests green at commit `8d499c2` (pushed).
 - 2026-07-20 — Playbook adopted; docs self-consistent; schemas set to
   `project_money`; scaffolding and blueprint written. Original `.rtf` brief
   deleted (absorbed into `CLAUDE.md`); all inherited docs localized to
@@ -112,5 +118,8 @@ None. Loops, when built, produce findings and reports only — never actions.
 
 ## Next recommended action
 
-- Define the first deterministic MVP research slice for a single object type
-  (e.g., `equity`) on cached data (requires user authorization to leave bootstrap).
+- **Continue information intake** (user is still uploading; ingestion pattern
+  documented in [HANDOFF.md](HANDOFF.md) §3.1). On the user's
+  end-of-information signal: record the agreed 1–4 ungating, finalize the MVP
+  spec (Tier-1 families H1–H3 on a delisting-aware daily equity/ETF panel),
+  and begin calibration-first execution per HANDOFF.md §3.2.

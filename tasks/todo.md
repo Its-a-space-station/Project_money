@@ -2,6 +2,22 @@
 
 > Conventions: `[ ]` open · `[~]` in progress · `[x]` done · `[!]` blocked /
 > needs decision. Nothing here authorizes leaving the current phase.
+> **Session handoff:** see [HANDOFF.md](../HANDOFF.md) for the full session
+> summary and the next-steps sequence.
+
+## Active — information intake (ongoing)
+
+- [~] **Await further information uploads from the user** and ingest each with
+      the established pattern (agent fleet → synthesis → cross-check → repo
+      doc → commit on approval). Three batches complete so far (papers,
+      trading books, ML shelf).
+- [!] On the user's **end-of-information signal**: record the agreed 1–4
+      ungating in STATE.md, finalize the MVP spec (H1–H3 seeds,
+      delisting-aware panel), begin calibration-first execution
+      (HANDOFF.md §3.2).
+- [ ] Optional while waiting (documentation, no gate needed; user go-ahead):
+      pre-draft MVP task specs + checker-owned cascade threshold config;
+      transcribe batch-2 coverage gaps (trading_corpus_synthesis.md §8).
 
 ## Bootstrap (done)
 
