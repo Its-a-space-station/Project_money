@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Its-a-space-station/Decision_systems_playbook/main/schemas/verification_debt.schema.json",
+  "title": "VerificationDebt",
+  "description": "A per-project ledger of what is asserted-but-not-fully-verified, keeping coverage gaps visible and bounded. Research-only: this record tracks verification gaps; it does not authorize or trigger any financial action. Outstanding high-risk debt blocks promotion. See docs/verification_debt_policy.md and docs/promotion_policy.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "report_id",
+    "project",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of this schema the record conforms to."
+    },
+    "report_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable unique id for this verification-debt report."
+    },
+    "project": {
+      "type": "string",
+      "enum": ["project_money", "shared"],
+      "description": "Project this debt ledger covers."
+    },
+    "verified_items": {
+      "type": "array",
+      "description": "Items independently verified this cycle.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "unverified_assumptions": {
+      "type": "array",
+      "description": "Assumptions relied upon but not yet verified.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "missing_tests": {
+      "type": "array",
+      "description": "Checks/tests that should exist but do not yet.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "lookahead_risks": {
+      "type": "array",
+      "description": "Places where future information may have leaked into analysis.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "survivorship_bias_risks": {
+      "type": "array",
+      "description": "Places where dropped/delisted/closed items may bias results.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "config_drift_risks": {
+      "type": "array",
+      "description": "Risks from thresholds/criteria changing without re-validation.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "overconfidence_risks": {
+      "type": "array",
+      "description": "Places where confidence may exceed what evidence supports.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "required_next_verifications": {
+      "type": "array",
+      "description": "Concrete verification steps to pay down this debt, ideally risk-ordered.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "promotion_blockers": {
+      "type": "array",
+      "description": "Debt items that currently block promotion to a higher stage.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

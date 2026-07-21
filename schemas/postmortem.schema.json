@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Its-a-space-station/Decision_systems_playbook/main/schemas/postmortem.schema.json",
+  "title": "Postmortem",
+  "description": "A retrospective on a research thesis after its outcome is known, feeding lessons and config proposals back into the playbook. Research-only: a Postmortem evaluates past research quality; it does not authorize or trigger any financial action. See docs/verification_policy.md, docs/promotion_policy.md, tasks/lessons.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "postmortem_id",
+    "object_id",
+    "outcome_label",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of this schema the record conforms to."
+    },
+    "postmortem_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable unique id for this postmortem."
+    },
+    "object_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id of the object the postmortem is about."
+    },
+    "original_belief_card_id": {
+      "type": "string",
+      "description": "Id of the BeliefCard whose thesis is being evaluated."
+    },
+    "outcome_label": {
+      "type": "string",
+      "enum": ["validated", "invalidated", "partially_validated", "inconclusive", "false_positive", "false_negative"],
+      "description": "How the research thesis held up against observed reality. Evaluative, not an action outcome."
+    },
+    "outcome_summary": {
+      "type": "string",
+      "description": "Plain-language summary of what happened versus what was believed."
+    },
+    "what_worked": {
+      "type": "array",
+      "description": "Aspects of the research/process that held up.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "what_failed": {
+      "type": "array",
+      "description": "Aspects of the research/process that did not hold up.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "false_positive_reason": {
+      "type": "string",
+      "description": "If a false positive: why the thesis fired when it should not have."
+    },
+    "false_negative_reason": {
+      "type": "string",
+      "description": "If a false negative: why a real signal was missed."
+    },
+    "lesson_candidates": {
+      "type": "array",
+      "description": "Candidate durable lessons to promote into tasks/lessons.md.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "config_change_proposals": {
+      "type": "array",
+      "description": "Proposed changes to thresholds, criteria, or process.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description"],
+        "properties": {
+          "description": { "type": "string", "minLength": 1 },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "promotion_or_deprecation_recommendation": {
+      "type": "string",
+      "enum": ["promote", "keep", "demote", "deprecate", "no_change", "needs_human_review"],
+      "description": "Recommended movement along the promotion ladder (see docs/promotion_policy.md). A recommendation only; promotion requires its own gate and human authorization."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Its-a-space-station/Decision_systems_playbook/main/schemas/belief_card.schema.json",
+  "title": "BeliefCard",
+  "description": "A research thesis about one object (an equity, a marketplace listing, a market contract). Research-only: a BeliefCard records what we believe and how confident we are; it does NOT recommend, authorize, or trigger any financial action. decision_label values are research/triage states only. See docs/label_policy.md, docs/verification_policy.md, docs/safety_policy.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "object_id",
+    "object_type",
+    "project",
+    "thesis_summary",
+    "validation_status",
+    "decision_label",
+    "human_review_required",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of this schema the record conforms to."
+    },
+    "object_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable id of the object this belief is about."
+    },
+    "object_type": {
+      "type": "string",
+      "enum": ["equity", "etf", "option", "macro_signal", "factor", "other"],
+      "description": "Kind of object under study (Project_money is multi-asset: equities, ETFs, options, macro signals, factors)."
+    },
+    "project": {
+      "type": "string",
+      "enum": ["project_money", "shared"],
+      "description": "Originating decision system."
+    },
+    "thesis_summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Plain-language research thesis. Observational, not directive."
+    },
+    "evidence_for": {
+      "type": "array",
+      "description": "Evidence supporting the thesis.",
+      "items": { "$ref": "#/$defs/evidence_reference" }
+    },
+    "evidence_against": {
+      "type": "array",
+      "description": "Evidence weakening or contradicting the thesis.",
+      "items": { "$ref": "#/$defs/evidence_reference" }
+    },
+    "uncertainty_flags": {
+      "type": "array",
+      "description": "Known sources of uncertainty / risk in this thesis.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "small_sample",
+          "lookahead_risk",
+          "survivorship_bias",
+          "config_drift",
+          "overconfidence",
+          "single_source",
+          "correlated_sources",
+          "stale_data",
+          "unverified_assumption",
+          "model_extrapolation",
+          "regime_change",
+          "data_quality",
+          "other"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Calibrated confidence in the thesis (0-1). Not a position size and not an action signal."
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["validation_pending", "provisional", "validated", "invalidated", "conflicting", "stale"],
+      "description": "Verification state per docs/verification_policy.md. Moves upward only after an independent (maker != checker) check."
+    },
+    "decision_label": {
+      "type": "string",
+      "enum": [
+        "reject",
+        "watchlist",
+        "trigger_ready_research_candidate",
+        "needs_human_review",
+        "paper_candidate",
+        "research_only",
+        "validation_pending"
+      ],
+      "description": "Research/triage state of this object. These are the ONLY approved labels. They are observational, not directives: none of them authorize buy, sell, trade, order, entry, or exit. 'paper_candidate' means eligible for paper/research study only, never live execution."
+    },
+    "human_review_required": {
+      "type": "boolean",
+      "description": "Whether a human must review before this belief is relied upon."
+    },
+    "invalidation_conditions": {
+      "type": "array",
+      "description": "Concrete conditions that would invalidate the thesis (used by postmortems and re-validation).",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "related_evidence_ids": {
+      "type": "array",
+      "description": "EvidenceRecord ids relevant to this belief.",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "related_object_ids": {
+      "type": "array",
+      "description": "Other object ids related to this one.",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "evidence_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id"],
+      "properties": {
+        "evidence_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Id of an EvidenceRecord."
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Relative weight of this evidence (0-1)."
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
