@@ -101,6 +101,22 @@ artifact under the expected directory), not mere existence.
 or gate gets the same adversarial pass before it is trusted. This mirrors the
 corpus finding that verifier-hardening is the core design, not polish.
 
+### 2026-07-20 — A guard hook you install is live against your own commands; match on target, not keywords
+
+**Context:** The Bash findings-guard, once wired into `.claude/settings.json`,
+blocked my own `git commit` — its first heuristic flagged any command where
+"findings" and a write-indicator (`>`) merely co-occurred, and the commit
+message mentioned both.
+**Lesson:** (1) PreToolUse hooks in the project settings apply to this
+session's own tool calls, including git — a badly-scoped guard blocks
+legitimate work. (2) Keyword co-occurrence is the wrong model for a write
+guard; match the write *construct targeting* the protected path (redirection
+into it, cp/mv with it as the destination arg), so commands that only mention
+or read the path pass.
+**Apply:** Scope PreToolUse guards to the actual dangerous construct, add
+false-positive regression tests (a git-commit message, a read, a source-side
+`cp`) alongside the true-positive ones, and remember the guard runs against me.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

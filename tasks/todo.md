@@ -49,7 +49,10 @@
       `docs/object_memory_and_ordering.md`, `docs/skill_evolution_policy.md`.
 - [x] Adversarial review of the config layer (4 lenses × 2-skeptic
       verification, 82 agents): 32 confirmed findings — ALL fixed with
-      regression tests; 7 refuted. Suite: **159 tests green, deterministic.**
+      regression tests; 7 refuted.
+- [x] Post-review: the Bash findings-guard false-positived on `git commit`
+      (keyword co-occurrence); rewritten target-aware. Suite: **163 tests
+      green, deterministic.** Committed + pushed (`803be80`).
 
 ## Review — config layer (2026-07-20)
 
@@ -66,6 +69,34 @@ missed entry/exit/recommendation and param names; the pipeline skill leaked
 promotion thresholds to the maker (firewall restored); data-navigator had
 Bash despite a read-only mandate (removed). Deferred by design: the
 TOOLMAKER-style build harness (admission gate only for now, next bullet).
+
+## Information intake (batch 2 — trading-books corpus: COMPLETE)
+
+- [x] Six thematic agents read the 28-book corpus (~1,100 of ~9,000 pages,
+      TOC-first strategic sampling). Two agents were API-interrupted and
+      resumed from transcript; all six delivered complete digests.
+- [x] Synthesized into
+      [docs/trading_corpus_synthesis.md](../docs/trading_corpus_synthesis.md):
+      evidence-tiered source map (T1–T4), nine-mechanism bank, 25
+      consolidated hypothesis families in three tiers, documented nulls,
+      process-doctrine translation, cross-corpus integration.
+- [x] Ungating re-rank check: the batch **sharpens but does not reorder**
+      the agreed 1–4 plan (MVP seed = Tier-1 families H1–H3; search loop
+      seeds = Tier 2; falsification calibration = Tier 3 + nulls). Two data
+      implications recorded: delisting-aware equity panel requirement; CFTC
+      COT as a future provider candidate. Ungating still **recorded only
+      when the user says the information set is complete.**
+
+### Review — batch 2 (2026-07-21)
+
+28 books yielded 1 clean dataset (Blackstar), 1 census (Bulkowski,
+conditionals only), 1 evidence broker (K&D), 2 methodology-bearing quant
+books (Chan, Fitschen), and ~20 folklore sources whose value is mechanisms +
+exactly-specified rules + convergence patterns. Best cross-cluster finds:
+the throwback/adverse-drift convergence (Bulkowski × Fitschen), the
+five-author pullback skeleton, Chan's VIX sign-asymmetry, and the corpus's
+own falsifications (divergence signals, release-direction, measure rules).
+All claims enter as `proposed`/`validation_pending`; nothing is promoted.
 
 ## Future (gated — not authorized by this list)
 

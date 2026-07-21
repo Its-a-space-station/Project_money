@@ -89,8 +89,17 @@ None. Loops, when built, produce findings and reports only — never actions.
   tool registry, tool-factory admission gate, memory/ordering helpers,
   object-memory + skill-evolution policy docs. An 82-agent adversarial review
   (4 lenses, 2-skeptic verification) confirmed 32 defects — all fixed with
-  regression tests; **159 tests green, deterministic**. Deferred: TOOLMAKER-
-  style build harness (admission gate only). Not yet committed.
+  regression tests; **163 tests green, deterministic** (commit `803be80`,
+  pushed).
+- 2026-07-21 — **Information batch 2 ingested** (28-book trading corpus, six
+  reading agents):
+  [docs/trading_corpus_synthesis.md](docs/trading_corpus_synthesis.md) —
+  evidence tiers, mechanism bank, 25 hypothesis families, documented nulls.
+  Verdict: sharpens but does not reorder the agreed (unrecorded) 1–4
+  ungating plan; MVP seed = momentum / short-horizon reversal / vol-gating
+  families on a delisting-aware daily equity-ETF panel. Awaiting further
+  information batches; ungating recorded only on the user's
+  end-of-information signal.
 
 ## Next recommended action
 

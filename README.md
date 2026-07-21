@@ -40,6 +40,9 @@ Then the supporting policies in [docs/](docs/), the data shapes in
 For the tooling roadmap derived from the coding-agents literature (38 papers,
 six-agent mechanism-level review), see
 [docs/agent_tooling_synthesis.md](docs/agent_tooling_synthesis.md).
+For the hypothesis registry distilled from the 28-book trading-practitioner
+corpus (evidence-tiered, mechanism-tagged, 25 families + documented nulls), see
+[docs/trading_corpus_synthesis.md](docs/trading_corpus_synthesis.md).
 
 ## Repository layout
 
