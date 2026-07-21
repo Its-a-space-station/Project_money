@@ -117,6 +117,21 @@ or read the path pass.
 false-positive regression tests (a git-commit message, a read, a source-side
 `cp`) alongside the true-positive ones, and remember the guard runs against me.
 
+### 2026-07-21 — Verify implemented formulas against their primary sources before gating on them
+
+**Context:** Batch-3 verification found our deflated-Sharpe benchmark used
+`sqrt(1/n_periods)` where the source requires the empirical cross-trial
+variance of Sharpe estimates — making the promotion gate anti-conservative
+exactly for diverse trial sets (the dangerous direction). A second hazard:
+the formula takes raw kurtosis but our metrics emit excess.
+**Lesson:** A "simplified" implementation of a published statistic can invert
+its safety properties. Convention mismatches (raw vs excess kurtosis,
+annualized vs per-period) are silent corrupters at interface boundaries.
+**Apply:** Any statistic used as a gate gets (a) a verify-against-source pass
+before first reliance, (b) input validation that catches convention mistakes
+mechanically (the kurtosis<1 guard), and (c) a regression test encoding the
+directional behavior the source requires (diverse trials ⇒ higher bar).
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

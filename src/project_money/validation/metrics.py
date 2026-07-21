@@ -82,7 +82,10 @@ def compute_metrics(
         "avg_turnover": float(turnover.mean()),
         "hit_rate": float((pnl > 0).mean()),
         "skew": float(pnl.skew()),
+        # pandas kurtosis() is EXCESS (Fisher; Gaussian = 0). deflated_sharpe
+        # takes RAW kurtosis (Gaussian = 3) — feed it kurtosis_raw.
         "kurtosis": float(pnl.kurtosis()),
+        "kurtosis_raw": float(pnl.kurtosis()) + 3.0,
         "avg_gross_exposure": float(w.abs().sum(axis=1).mean()),
     }
 
@@ -95,20 +98,37 @@ def deflated_sharpe(
     skew: float = 0.0,
     kurtosis: float = 3.0,
     periods_per_year: int = TRADING_DAYS,
+    trial_sharpes: "list[float] | tuple[float, ...] | None" = None,
 ) -> float:
     """Deflated Sharpe Ratio probability (Bailey & Lopez de Prado 2014).
 
     Returns P(true Sharpe > 0) after correcting the observed (annualized)
     Sharpe for multiple testing (``n_trials`` — supplied by the hypothesis
-    ledger, never guessed), track length, skew, and excess kurtosis.
+    ledger, never guessed), track length, skew, and kurtosis.
 
-    ``kurtosis`` is the *raw* fourth moment ratio (normal = 3), matching
-    pandas' ``kurtosis() + 3``.
+    ``kurtosis`` is the *raw* fourth-moment ratio (Gaussian = 3) — i.e.
+    pandas' ``kurtosis() + 3``, or ``compute_metrics``'s ``kurtosis_raw``.
+    Values below 1 are mathematically impossible for raw kurtosis and raise,
+    catching the excess-kurtosis convention mistake.
+
+    ``trial_sharpes`` — the ANNUALIZED Sharpe estimates of the recorded
+    trials (e.g. ``HypothesisLedger.recorded_sharpes()``). Per the source,
+    the expected-max benchmark scales with **sqrt(V[{SR_n}]), the empirical
+    variance of Sharpe estimates across trials**. When omitted, the IID
+    zero-edge null approximation ``sqrt(1/n_periods)`` is used — documented
+    fallback that UNDERSTATES the bar when trials are diverse (verified
+    against the book, batch-3 review; see docs/ml_shelf_integration.md §1).
     """
     if n_trials < 1:
         raise ValueError("n_trials must be >= 1")
     if n_periods < 2:
         raise ValueError("n_periods must be >= 2")
+    if kurtosis < 1.0:
+        raise ValueError(
+            f"kurtosis={kurtosis} is impossible for RAW kurtosis (Gaussian=3); "
+            "you likely passed excess (Fisher) kurtosis — add 3, or use "
+            "compute_metrics()['kurtosis_raw']"
+        )
 
     # Work in per-period units.
     sr = observed_sharpe / math.sqrt(periods_per_year)
@@ -125,10 +145,16 @@ def deflated_sharpe(
         nd = NormalDist()
         z1 = nd.inv_cdf(1.0 - 1.0 / n_trials)
         z2 = nd.inv_cdf(1.0 - 1.0 / (n_trials * e))
-        # Cross-sectional std of trial Sharpes is unknowable without the ledger's
-        # score history; the standard conservative choice is the observed sr's
-        # own estimation-error scale.
-        sr_std = math.sqrt(1.0 / n_periods)
+        if trial_sharpes is not None and len(trial_sharpes) >= 2:
+            per_period = [s / math.sqrt(periods_per_year) for s in trial_sharpes]
+            mean_pp = sum(per_period) / len(per_period)
+            var_pp = sum((s - mean_pp) ** 2 for s in per_period) / (len(per_period) - 1)
+            sr_std = math.sqrt(max(var_pp, 1e-18))
+        else:
+            # IID zero-edge null approximation: each trial's SR estimate on
+            # n_periods observations has sampling std ~ sqrt(1/n_periods).
+            # Understates the bar for genuinely diverse trials.
+            sr_std = math.sqrt(1.0 / n_periods)
         sr_benchmark = sr_std * ((1.0 - gamma) * z1 + gamma * z2)
 
     denom = math.sqrt(

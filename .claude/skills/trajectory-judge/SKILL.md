@@ -39,9 +39,31 @@ supports lowest-score@k selection (+30% at −43% cost in the source study).
 5. **Best-of-N**: when k candidate trajectories exist, prefer the lowest
    score; log all scores to the ledger entry.
 
+## Judge identity & bias controls (batch-3 hardening)
+
+- **Pin the judge identity**: every score record logs model ID + prompt hash
+  + sampling params. Changing ANY of the three creates a *different judge*
+  and voids the calibration — re-calibrate before it gates again. A score
+  shift without a pipeline change is a `needs_human_review` event, not a
+  finding.
+- **Bias battery** (run at each calibration cycle): (a) order-swap — for any
+  pairwise/best-of-N use, score under both orderings; (b) length-confound —
+  check that longer trajectories don't win on verbosity (documented judge
+  bias: verbose-but-wrong beats concise-and-right); (c) anchor-set repeats —
+  re-score a fixed anchor set and track run-to-run variance as a judge-health
+  metric (consistency ≠ accuracy).
+- **Maker ≠ judge**: the model family that produced a trajectory is never its
+  sole judge (self-bias is measured at +10–25% self-win-rate).
+- Prefer discrete per-criterion sub-scores (1–5 with a worked exemplar per
+  level) aggregated to the 0–10 total, over one raw 0–10 judgment.
+
 ## Calibration gate (before this judge gates anything)
 
 Score ~20 trajectories that a human has independently rated; report agreement
-(rank correlation ≥ 0.8 to match the source's bar). Until calibrated, use
-judgments as advisory only — an uncalibrated LLM judge is never a gate
-(reference-library doctrine).
+(rank correlation ≥ 0.8 to match the source's bar). **Authority statement
+(sample-size honesty):** ~20 labels can only certify *coarse* agreement
+(≈10 labels detect ~30% score gaps; ≈100 detect ~10%). At n≈20 this judge is
+valid for screening and best-of-N triage ONLY — never as sole promotion
+evidence. Grow the calibration set toward ~100 labels (bootstrap it to check
+κ stability) before any gate-level reliance. Until calibrated, judgments are
+advisory only — an uncalibrated LLM judge is never a gate.

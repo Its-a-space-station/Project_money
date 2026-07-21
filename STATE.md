@@ -100,6 +100,15 @@ None. Loops, when built, produce findings and reports only — never actions.
   families on a delisting-aware daily equity-ETF panel. Awaiting further
   information batches; ungating recorded only on the user's
   end-of-information signal.
+- 2026-07-21 — **Information batch 3 ingested** (AI/ML shelf,
+  verify-and-extract, four agents):
+  [docs/ml_shelf_integration.md](docs/ml_shelf_integration.md). The playbook
+  map passed its second independent audit; the pass caught and we **fixed an
+  anti-conservative defect in the deflated-Sharpe promotion gate**
+  (cross-trial variance benchmark + raw-kurtosis guard + ledger wiring) and
+  hardened the trajectory-judge (identity pinning, bias battery, calibration
+  authority limits). Suite: **170 tests green, deterministic**. Follow-on
+  build items catalogued (integration doc §3). Not yet committed.
 
 ## Next recommended action
 

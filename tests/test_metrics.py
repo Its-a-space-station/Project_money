@@ -91,3 +91,81 @@ class TestDeflatedSharpe:
             deflated_sharpe(1.0, 0, 252)
         with pytest.raises(ValueError):
             deflated_sharpe(1.0, 10, 1)
+
+
+class TestDeflatedSharpeBatch3Corrections:
+    """Regression tests for the batch-3 verified corrections (de Prado):
+    the benchmark must scale with cross-trial SR variance, and the formula
+    takes RAW kurtosis."""
+
+    def test_excess_kurtosis_rejected_with_hint(self):
+        with pytest.raises(ValueError, match="excess"):
+            deflated_sharpe(1.0, 10, 504, kurtosis=0.0)  # Gaussian EXCESS kurt
+
+    def test_kurtosis_raw_key_matches_convention(self, prices, returns):
+        from project_money.validation.metrics import compute_metrics
+        from tests.conftest import causal_momentum_signal
+
+        m = compute_metrics(causal_momentum_signal(prices), returns)
+        assert m["kurtosis_raw"] == pytest.approx(m["kurtosis"] + 3.0)
+        # raw kurtosis is mathematically >= 1
+        assert m["kurtosis_raw"] >= 1.0
+
+    def test_diverse_trials_raise_the_bar(self):
+        """Empirical cross-trial variance > IID-null approximation ⇒ the
+        corrected DSR must be LOWER (the old default was anti-conservative)."""
+        diverse = [-1.5, -0.5, 0.3, 0.9, 1.8, 2.4]  # widely dispersed trial SRs
+        p_default = deflated_sharpe(1.5, 6, 504)
+        p_corrected = deflated_sharpe(1.5, 6, 504, trial_sharpes=diverse)
+        assert p_corrected < p_default
+
+    def test_near_clone_trials_lower_the_bar(self):
+        """Near-identical trials ⇒ tiny cross-trial variance ⇒ corrected DSR
+        HIGHER than the IID-null fallback (old default over-conservative)."""
+        clones = [1.49, 1.50, 1.51, 1.50, 1.495, 1.505]
+        p_default = deflated_sharpe(1.5, 6, 504)
+        p_corrected = deflated_sharpe(1.5, 6, 504, trial_sharpes=clones)
+        assert p_corrected > p_default
+
+    def test_single_trial_unaffected(self):
+        """n_trials=1 has no benchmark — trial_sharpes must not change PSR."""
+        a = deflated_sharpe(1.0, 1, 756)
+        b = deflated_sharpe(1.0, 1, 756, trial_sharpes=[1.0])
+        assert a == b
+
+
+class TestLedgerSharpeWiring:
+    def test_recorded_sharpes_feed_the_corrected_dsr(self, tmp_path):
+        from project_money.ledger import HypothesisLedger, LedgerEntry
+
+        led = HypothesisLedger(tmp_path / "l.jsonl")
+        for i, sr in enumerate([0.4, 1.1, -0.2, 0.8]):
+            led.append(
+                LedgerEntry(
+                    entry_id=f"h{i}",
+                    ts="2026-07-21T00:00:00",
+                    family="momentum",
+                    hypothesis=f"variant {i}",
+                    status="validation_pending",
+                    scores={"sharpe_net": sr},
+                )
+            )
+        srs = led.recorded_sharpes("momentum")
+        assert sorted(srs) == [-0.2, 0.4, 0.8, 1.1]
+        p = deflated_sharpe(1.1, led.n_trials("momentum"), 504, trial_sharpes=srs)
+        assert 0.0 < p < 1.0
+
+    def test_recorded_sharpes_skips_missing_scores(self, tmp_path):
+        from project_money.ledger import HypothesisLedger, LedgerEntry
+
+        led = HypothesisLedger(tmp_path / "l.jsonl")
+        led.append(
+            LedgerEntry(
+                entry_id="h1",
+                ts="2026-07-21T00:00:00",
+                family="momentum",
+                hypothesis="no score yet",
+                status="proposed",
+            )
+        )
+        assert led.recorded_sharpes() == []

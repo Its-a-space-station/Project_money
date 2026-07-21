@@ -43,6 +43,10 @@ six-agent mechanism-level review), see
 For the hypothesis registry distilled from the 28-book trading-practitioner
 corpus (evidence-tiered, mechanism-tagged, 25 families + documented nulls), see
 [docs/trading_corpus_synthesis.md](docs/trading_corpus_synthesis.md).
+For the verified integration of the AI/ML shelf (statistical gates,
+calibration recipes, LLM-engineering prerequisites — plus the stack
+corrections it produced), see
+[docs/ml_shelf_integration.md](docs/ml_shelf_integration.md).
 
 ## Repository layout
 

@@ -98,6 +98,35 @@ five-author pullback skeleton, Chan's VIX sign-asymmetry, and the corpus's
 own falsifications (divergence signals, release-direction, measure rules).
 All claims enter as `proposed`/`validation_pending`; nothing is promoted.
 
+## Information intake (batch 3 — AI/ML shelf: COMPLETE)
+
+- [x] Four verify-and-extract agents completed over the already-mapped
+      20-PDF shelf. Map substantially verified; five citation defects caught
+      (minTRL not-in-book; Powell printed-vs-PDF labeling; optimizer's-curse
+      depth; Mohri/DasGupta offsets) and — decisively — **three defects in
+      our own stack**.
+- [x] Wrote [docs/ml_shelf_integration.md](../docs/ml_shelf_integration.md):
+      verification results, corrections, consolidated 13-item build list,
+      doctrine crosswalk, subsequent-uploads prerequisites.
+- [x] **Corrections applied with regression tests** (170 green,
+      deterministic): `deflated_sharpe` now takes the ledger's cross-trial
+      Sharpes (empirical-variance benchmark per the source; IID-null
+      fallback documented), raw-kurtosis validation with corrective hint,
+      `kurtosis_raw` metric key, `HypothesisLedger.recorded_sharpes()`
+      wiring, trajectory-judge hardening (identity pinning, bias battery,
+      n≈20 authority statement).
+
+### Review — batch 3 (2026-07-21)
+
+The verify-and-extract design paid off twice over: the prior map held up
+(no content contradictions — its second successful independent audit), and
+the pass caught a real anti-conservative defect in our promotion gate that
+unit tests could not have found (the formula matched our own tests; it
+mismatched the source). Follow-on build items (PSR, ROPE gate, corrected
+permutation estimator, fold-split ranking, calibration harness, CPCV/PBO,
+conformal, CUSUM monitors) are catalogued in the integration doc §3 —
+sequenced for when validation work resumes, not blocking the gates.
+
 ## Future (gated — not authorized by this list)
 
 - [!] TOOLMAKER-style tool *build* harness (checkpointed sandbox build with

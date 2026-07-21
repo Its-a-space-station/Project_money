@@ -166,6 +166,22 @@ class HypothesisLedger:
             if e.params and param_distance(params, e.params) <= threshold
         )
 
+    def recorded_sharpes(
+        self, family: str | None = None, *, score_key: str = "sharpe_net"
+    ) -> list[float]:
+        """Per-trial annualized Sharpe estimates from the ledger (current
+        state per trial) — the ``trial_sharpes`` input the corrected deflated-
+        Sharpe benchmark requires (empirical cross-trial variance; de Prado's
+        Third Law: report every trial)."""
+        out = []
+        for e in self.latest_by_id().values():
+            if family is not None and e.family != family:
+                continue
+            v = e.scores.get(score_key)
+            if v is not None and isinstance(v, (int, float)):
+                out.append(float(v))
+        return out
+
     def expected_max_null_sharpe(self, family: str | None = None, *, n_periods: int = 252) -> float:
         """Convenience: the expected best annualized Sharpe among this many
         zero-edge trials (the bar a champion must beat; see
