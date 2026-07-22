@@ -1,78 +1,88 @@
 # Broker Strategy
 
-Posture toward brokerage connections. For **Project_money** the concrete broker is
+Posture toward the brokerage connection. For **Project_money** the broker is
 **Robinhood** (any other broker would be governed identically). The short version:
-a broker is a **read-only data provider**, it is **gated**, and **no integration
-exists today**.
+the broker provides **read-only data first**, and **execution is the destination**
+— built later, gated phase by phase, and **operated by the human**. The assistant
+builds and validates the execution path but never operates it live or holds
+credentials (see [safety_policy.md](safety_policy.md) §1).
 
-## 1. Default state
+## 1. Two roles, sequenced
 
-**No broker integration exists. None is permitted during the documentation-only
-bootstrap.** This document defines the boundary a future integration must respect
-before it could ever be built — it is not an authorization to build one.
+The broker serves two roles, built in order:
 
-Project_money's original brief lists a "Robinhood API" among its resources. That
-is scoped here to **read-only data only** — the existence of the API, or of
-execution endpoints within its SDK, is **not** authorization to use them. See
-[safety_policy.md](safety_policy.md).
+1. **Read-only data provider (first).** Market data, and account *state* for
+   context (what is held, buying power) — behind the read-only provider interface,
+   with extra caution because the same SDK exposes execution.
+2. **Execution venue (the destination).** Order placement for validated
+   strategies, built through the gated ladder in §3 and operated by the human.
 
-## 2. The boundary: read-only, never an execution path
+Role 1 is built and used first; Role 2 is unlocked only phase by phase.
 
-If and when a Robinhood (or other broker) connection is built, it is constrained to
-**read-only market and account data** for research:
-
-- **Allowed (future, gated):** read market data, read account *state* for
-  context (e.g., to label what is already held, for research framing only), read
-  historical data.
-- **Never:** place, modify, or cancel orders; transfer or withdraw funds; change
-  allocations; or connect any read path to an action path. The system does not
-  buy, sell, trade, or execute — see [safety_policy.md](safety_policy.md). These
-  capabilities are not "disabled by config"; they are simply not built.
-
-A broker therefore appears in [architecture.md](architecture.md) as just another
-**read-only provider** behind the provider interface
-(see [provider_strategy.md](provider_strategy.md)), with extra caution.
-
-## 3. Why brokers get extra caution
+## 2. Extra caution for the broker
 
 A brokerage API is the one provider whose vendor SDK *also* exposes execution
-endpoints. That proximity is the risk. Mitigations a future integration must
-include:
+endpoints. That proximity is the risk. Mitigations, at every phase:
 
-- Use read-only credentials / permissions where the broker supports them.
-- Prefer paper/read endpoints; never instantiate execution clients.
-- Keep any broker adapter in an isolated module with no import path to anything
-  that could act.
-- Treat account data as sensitive: no secrets, account numbers, or balances in
-  the repo, logs, or reports (redact per [report_policy.md](report_policy.md)).
+- Keep read paths and order paths in **separate modules**; the read/research layer
+  has no import path that can place an order.
+- Use the narrowest credentials/permissions the broker supports for the current
+  phase (read-only until execution is authorized).
+- Treat account data as sensitive: no secrets, account numbers, or balances in the
+  repo, logs, or reports (redact per [report_policy.md](report_policy.md)).
+- Credentials are supplied by the human at runtime and never handled by the
+  assistant (safety_policy.md §1, §5).
 
-## 4. Gates before any broker work
+## 3. The gated ladder to execution
 
-Building a broker integration requires, in sequence:
-
-1. The user explicitly lifting the bootstrap scope guard for broker work.
-2. A written blueprint in [../project_blueprints/](../project_blueprints/) for
-   the broker integration, reviewed against this document and the safety policy.
-3. Passing the relevant gate in [promotion_policy.md](promotion_policy.md),
-   including an explicit "read-only, no execution path" verification.
-4. Maker/checker review confirming no execution capability is reachable.
-
-Until all four hold, the answer to "connect a broker" is **no**.
-
-## 5. Phasing (illustrative, not approved)
+Each rung requires explicit human authorization recorded in `STATE.md`; nothing
+advances by inference.
 
 ```text
-Phase 0  (now)  no broker integration
-Phase 1  read-only market data only        ← requires gates in §4
-Phase 2  read-only account context         ← separate authorization
-Phase 3+ (execution)                        ← OUT OF SCOPE for this playbook
+Phase 0  read-only market data
+Phase 1  read-only account context (buying power, positions, for research)
+Phase 2  dry-run execution         (orders computed + journaled, never sent)
+Phase 3  paper trading             (broker paper endpoint or simulator; no real money)
+Phase 4  shadow-canary             (live-data signals logged, still no real orders)
+Phase 5  human-approved live       (real orders, each trade/batch approved by the human)
+Phase 6  bounded auto-trade        (looped, within hard limits + kill-switches) — a
+                                    later, separately authorized graduation
 ```
 
-Phase 3+ is explicitly outside this project's scope. Project_money is a research
-system only.
+**Live equities begin at Phase 5 (human approves each trade/batch).** Phase 6 is
+earned only after a live track record under Phase 5 and an explicit decision — it
+is never the starting point.
+
+## 4. Guardrails any execution build must include
+
+Before real money (Phase 5+), the execution module must have — and the assistant
+must build — the full guardrail set (the user's Kalshi trading bot is the working
+reference for this pattern):
+
+- **Kill-switches:** global and per-category daily-loss limits, drawdown limit,
+  consecutive-loss limit; a manual halt that persists across restarts.
+- **Position / exposure limits:** per-ticker cap, total-exposure cap, fractional
+  Kelly or equivalent sizing bound, price bounds.
+- **Shadow-canary promotion:** a mandatory shadow period with pre-registered
+  promotion criteria (minimum days, minimum resolved sample, out-of-sample
+  improvement over honest nulls, zero safety events) before anything goes live;
+  features default off.
+- **Journaling & reconciliation:** every order event recorded; local equity /
+  positions reconciled against the broker; mismatch triggers a halt.
+- **Dry-run mode** and a documented **runbook** with emergency-stop and flatten
+  procedures.
+
+An execution build lacking any of these does not reach Phase 5.
+
+## 5. Validation is the precondition
+
+No strategy is wired to Phase 5+ until it has cleared the full verification stack
+(safety_policy.md §2): maker ≠ checker, deflated Sharpe, leakage/contamination
+audit, cost-inclusive evaluation, and contamination-free forward tracking. The
+broker path executes *validated* strategies; it does not validate them.
 
 ## 6. Cross-references
 
 [safety_policy.md](safety_policy.md) · [provider_strategy.md](provider_strategy.md)
 · [architecture.md](architecture.md) · [promotion_policy.md](promotion_policy.md)
-· [report_policy.md](report_policy.md)
+· [report_policy.md](report_policy.md) · [loop_architecture.md](loop_architecture.md)

@@ -228,6 +228,28 @@ independently re-derive both the counts AND each item's bucket against the
 source tiering before the doc is relied on. Always run a checker on the
 integrating document, not just on its inputs.
 
+### 2026-07-22 — Project pivoted to research-AND-trading; the operative invariant is the division of labor, not "research-only"
+
+**Context:** The project was scoped "research-only, execution never, Robinhood
+read-only." The user corrected that: the actual intent was always automated
+execution of validated strategies via Robinhood (a prior session built exactly
+such a guardrailed bot for Kalshi). CLAUDE.md + safety_policy + broker_strategy
++ the rest of the governance docs were rewritten to match.
+**Lesson:** "Research-only" is no longer the invariant — but the safety substance
+did not disappear, it changed shape. The invariant that now carries the safety
+load is the **division of labor** (safety_policy.md §1): the assistant builds,
+tests, and validates; the **human operates live capital** — the assistant never
+itself places a live order, moves funds, flips a system to live, or handles live
+credentials, and autonomy is always bounded/observable/stoppable/validation-gated.
+A prior build (Kalshi) is not license for the assistant to operate live capital or
+hold credentials — those lines hold regardless of precedent.
+**Apply:** A future session must NOT re-impose blanket "research-only" (it's
+stale), and must NOT drift the other way into the assistant executing/operating
+live. Read STATE.md for the current authorized phase — execution is the gated
+*destination*, and each phase (dry-run → paper → shadow-canary → human-approved
+live → bounded auto-trade) begins only on explicit authorization recorded in
+STATE.md. Validation always precedes capital.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

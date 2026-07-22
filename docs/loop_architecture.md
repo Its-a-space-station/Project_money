@@ -8,8 +8,12 @@ and re-runnable. It refines the pipeline in [architecture.md](architecture.md).
 
 A loop gives us natural checkpoints: between iterations a human can inspect,
 pause, or stop, and the system can enforce guards. Long unattended runs hide
-state and accumulate risk. Every loop here is a **research loop** — it ends in
-findings and reports, never in an action. See [safety_policy.md](safety_policy.md).
+state and accumulate risk. Most loops here are **research / monitoring loops** — they end in findings and
+reports, never in an action. A distinct **execution loop** exists only in the
+gated live-trading phase (Phase 6, per [broker_strategy.md](broker_strategy.md)
+§3): it places orders **only within hard limits + kill-switches, fully journaled,
+and instantly haltable — human-operated, never unbounded or unattended, and never
+launched or run by the assistant.** See [safety_policy.md](safety_policy.md).
 
 ## 2. Anatomy of one iteration
 
@@ -29,8 +33,9 @@ findings and reports, never in an action. See [safety_policy.md](safety_policy.m
         └──────────────────────────────────────────────┘
 ```
 
-No step in this loop places an order or moves money. The loop's only outputs are
-data, findings, reports, and operational records.
+In a research / monitoring loop, no step places an order or moves money; its
+outputs are data, findings, reports, and operational records. Order placement
+lives only in the separate, gated, human-operated execution loop (§1).
 
 ## 3. Required properties
 
@@ -74,7 +79,11 @@ as a verified finding.
 
 ## 7. What loops must never do
 
-- Take any financial action (order, transfer, allocation) — ever.
+- A **research / monitoring loop** takes no financial action — ever. The gated
+  **execution loop** may place orders, but **only** within pre-set hard limits +
+  kill-switches, fully journaled and reconciled, instantly haltable, and
+  human-operated — never unbounded, never unattended, never beyond the authorized
+  limits, and never launched or operated by the assistant.
 - Send outward-facing messages or publish externally without explicit approval.
 - Escalate their own permissions, cadence, or scope without a human.
 - Swallow errors silently; failures are recorded and, past threshold, halt.

@@ -5,18 +5,27 @@ are governed. This complements the *confidence* labels in
 [verification_policy.md](verification_policy.md): confidence says *how sure we
 are*; result labels say *what we observed*.
 
-## 1. Forbidden vocabulary
+## 1. Forbidden vocabulary in the research / validation layer
 
 Do **not** use these as labels, field names, enum values, identifiers, file
-names, or report terms anywhere in the playbook or downstream systems:
+names, or report terms **in the research / validation layer** (findings, belief
+cards, decision cards, research and validation reports, and the canonical
+schemas):
 
 > **Buy · Sell · Trade · Order · Execute · Fill · Entry · Exit · Recommendation ·
 > Position (as an action) · Long/Short (as a directive)**
 
-These imply directives or actions. They are permitted **only** inside
-safety-policy negations (e.g., "this system does not place orders") or inside a
-schema `description` that explicitly forbids them. See
-[safety_policy.md](safety_policy.md).
+In that layer they imply directives the research output must not carry. They are
+permitted only inside safety negations, forbidden-label examples, or a schema
+`description` that explicitly forbids them.
+
+**The execution layer is exempt — and separate.** The gated execution module
+(order placement, fills, positions, cancels) legitimately uses this operational
+vocabulary *within that module*. The rule is not "these words never appear"; it is
+"these words never leak into a research artifact or a canonical research label,"
+so that a research state can never be mistaken for a live action taken. Crossing
+from a research label to a live order always runs through the human-operated gates
+in [safety_policy.md](safety_policy.md) §1/§4.
 
 ## 2. Approved result vocabulary (canonical)
 
@@ -42,7 +51,7 @@ without updating this table **and** the schema enums in the same change.
 Confidence / validation state is a *separate* axis — see
 [verification_policy.md](verification_policy.md).
 
-## 3. Per-domain framing (research-only)
+## 3. Per-domain framing (research layer)
 
 Project_money is multi-asset; the same canonical labels apply to every object type.
 Examples of approved framing vs. forbidden framing:
@@ -53,7 +62,7 @@ Examples of approved framing vs. forbidden framing:
 | Options | `research_only`, `needs_human_review`, `validation_pending` | "open this position", "entry/exit" |
 | Macro signals | `watchlist`, `research_only` | "risk-on trade", "rotate into…" |
 | Factor research | `trigger_ready_research_candidate`, `reject` | "long/short this factor" |
-| Robinhood (read-only) | read-only `research_only`, `needs_human_review` | any execution label |
+| Robinhood (research view) | `research_only`, `needs_human_review`, `paper_candidate` | an execution label on a *research* artifact (order/fill belong to the execution module, not here) |
 
 ## 4. Naming rules
 
@@ -68,10 +77,12 @@ Examples of approved framing vs. forbidden framing:
 
 ## 5. Why this matters
 
-Vocabulary is a safety control. A field named `buy_signal` invites someone — or
-some future automation — to act on it. A field whose value is `watchlist` or
-`research_only` describes a research state and leaves the decision with the
-human. Keep the language research-only and the system stays research-only.
+Vocabulary is a safety control. A *research* field named `buy_signal` invites
+someone — or some automation — to treat an unvalidated observation as an
+instruction. A field whose value is `watchlist` or `research_only` describes a
+research state and leaves the decision with the human and the §1/§4 gates. Keeping
+execution vocabulary confined to the gated execution module is what stops a
+research state from silently becoming a live order.
 
 ## 6. Playbook v2 note
 

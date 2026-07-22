@@ -16,7 +16,7 @@ without passing that stage's gate.
 | **Experiment** | An exploratory doc, schema, or (later) prototype. No reliance. |
 | **Candidate** | Reviewed against the policies; internally consistent. |
 | **Standard** | Adopted into the playbook / a project blueprint as the way we do it. |
-| **Operational** | A live research loop producing findings (future). |
+| **Operational** | A live loop — research/monitoring, or (gated) execution per [broker_strategy.md](broker_strategy.md) §3 — running under explicit authorization. |
 
 ## 2. Gates
 
@@ -49,7 +49,9 @@ Each promotion requires meeting **all** criteria for the target stage.
   any broker use complies with [broker_strategy.md](broker_strategy.md).
 - Verification debt is within threshold
   ([verification_debt_policy.md](verification_debt_policy.md)).
-- **Reaffirms [safety_policy.md](safety_policy.md): no execution path exists.**
+- **Complies with [safety_policy.md](safety_policy.md):** the assistant never
+  operates live capital or holds credentials; any execution is gated, guardrailed,
+  human-operated, and reached only after full validation.
 - Explicit user authorization to run.
 
 ## 3. Demotion

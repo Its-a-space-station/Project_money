@@ -5,7 +5,38 @@
 > **Session handoff:** see [HANDOFF.md](../HANDOFF.md) for the full session
 > summary and the next-steps sequence.
 
-## Active — information intake (ongoing)
+## Active — governance pivot (research-only → research-and-trading)
+
+- [x] **CLAUDE.md rewritten (2026-07-22)** to reflect the corrected project
+      intent: validated strategies are executed as automated trades via
+      Robinhood, **human-operated**, built through a gated ladder (dry-run →
+      paper → shadow-canary → human-approved live → later bounded auto-trade).
+      Prime directives preserve the invariants that hold regardless: the
+      assistant builds/validates but never itself places a live order, moves
+      funds, flips to live, or handles credentials; autonomy stays bounded /
+      observable / stoppable / validation-gated. Reference design = the user's
+      Kalshi bot guardrails. **Uncommitted; pending user review.**
+- [x] **Coordinated doc updates DONE (2026-07-22).** Rewrote/updated to match
+      the pivot, keeping every real safety invariant: `docs/safety_policy.md`
+      (division-of-labor as the top hard constraint; validation-before-capital;
+      bounded/observable/stoppable autonomy; phased ladder),
+      `docs/broker_strategy.md` (read-only-first → gated execution ladder +
+      guardrail requirements, Kalshi as reference), `STATE.md` (phase, scope,
+      approved-decision, safety-rules, non-goals, active-loops),
+      `docs/report_policy.md` + `docs/label_policy.md` (execution-layer
+      carve-out; research vocabulary + schema enums untouched),
+      `docs/loop_architecture.md`, `docs/promotion_policy.md`,
+      `docs/architecture.md`, `docs/claude_code_workflow.md`,
+      `docs/provider_strategy.md`. Governance layer swept clean of stale
+      "research-only/no-execution" assertions (historical batch-synthesis docs
+      left as accurate records). Suite: 170 green (no code changed).
+      **Uncommitted; pending user review.**
+- [!] **Note:** CLAUDE.md sets the destination but records NO authorization to
+      begin building execution — each phase starts only on explicit approval
+      recorded in STATE.md. The 1–4 ungating decision (below) and any
+      execution-phase authorization remain the user's to give.
+
+## Active — information intake (COMPLETE)
 
 - [ ] **END-OF-INFORMATION SIGNAL RECEIVED (2026-07-22).** All six batches
       ingested. **Decision point for the user: record the agreed 1–4

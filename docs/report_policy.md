@@ -1,26 +1,31 @@
 # Report Policy
 
-How findings reach a human. A report is the system's primary, human-facing
-output — and the only thing it "does." Reports inform; they never direct.
+How findings and activity reach the operator. Reports are the system's primary
+human-facing output. Research/validation reports inform; execution/performance
+reports record what the operator's own system did.
 
 ## 1. Principles
 
-- **Research-only.** A report describes observations and confidence. It is
-  explicitly **not financial advice** and never recommends an action.
+- **For the operator's own use.** A research/validation report describes
+  observations and confidence; a performance/execution report describes the
+  operator's own live activity. Neither is investment advice for third parties.
 - **Evidence-bearing.** Every finding cites its sources, timestamps, applied
   criteria, and confidence label. A reader can retrace it.
 - **Honest about uncertainty.** Provisional, conflicting, and stale findings are
   shown as such — never laundered into apparent certainty.
-- **No forbidden vocabulary.** No Buy/Sell/Trade/Order framing; use the approved
-  labels in [label_policy.md](label_policy.md).
+- **Layer-appropriate vocabulary.** Research/validation reports use the approved
+  research labels in [label_policy.md](label_policy.md) and avoid directive
+  framing; execution/performance reports may state realized orders, fills, and
+  positions as facts about what the operator's system did.
 
 ## 2. Required disclaimer
 
 Every report begins with, verbatim or in close paraphrase:
 
-> **Research only. Not financial advice.** This report summarizes automated
-> observations for human review. It does not recommend, initiate, or execute any
-> financial action. Verify independently before making any decision.
+> **For the operator's own use. Not third-party financial advice.** This report
+> summarizes automated observations and/or the operator's own system activity for
+> the operator's review. Any live action is taken by the operator through the
+> guardrailed, human-operated execution path — not by this report.
 
 ## 3. Standard report structure
 
@@ -57,11 +62,12 @@ Every report begins with, verbatim or in close paraphrase:
 Neutral, observational, and specific. State what was measured and how confident
 we are. Avoid persuasive or directive language. The reader decides.
 
-## 7. Bootstrap status
+## 7. Status
 
-No reports are generated yet. This is the contract a future reporting layer must
-meet, and a prerequisite for the reporting gate in
-[promotion_policy.md](promotion_policy.md).
+No reporting layer is built yet. This is the contract a future reporting layer
+must meet. Report types: research findings, validation results, and — once
+execution is authorized — live-performance and safety-health reports (kill-switch
+state, reconciliation, fill quality) for the operator.
 
 ## 8. Cross-references
 

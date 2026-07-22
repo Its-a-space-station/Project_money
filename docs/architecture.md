@@ -7,8 +7,9 @@ This is the mental model; the policies in the sibling docs make it concrete.
 
 A **decision system** is a research pipeline that turns raw observations from
 the outside world into **verified, labeled findings and human-readable reports**.
-It informs a human decision. It does not make the decision and it does not act
-on it. Project_money — across its equities, ETFs, options, macro, and factor
+It informs a human decision and, for validated strategies, feeds a
+**human-operated** execution path — it never acts on its own; the human operates
+live capital (see [safety_policy.md](safety_policy.md) §1). Project_money — across its equities, ETFs, options, macro, and factor
 research — is an instance of this shape: every strategy or screen it runs is a
 pipeline of this form.
 
@@ -45,7 +46,7 @@ or downgraded in confidence, never quietly promoted.
 ┌─────────────────────────────────────────────┐
 │ Reporting layer   reports, disclaimers       │  read-only to humans
 ├─────────────────────────────────────────────┤
-│ Decision-support  criteria, scoring, labels  │  research-only logic
+│ Decision-support  criteria, scoring, labels  │  validation logic
 ├─────────────────────────────────────────────┤
 │ Verification      maker/checker, confidence  │  independent of analysis
 ├─────────────────────────────────────────────┤
@@ -83,8 +84,10 @@ can inspect, pause, and resume them, and so re-running is safe.
 
 ## 6. Non-goals
 
-- No autonomous financial action of any kind.
-- No order placement, fund movement, or position changes.
+- **No assistant-operated financial action, and no autonomous or unattended
+  execution.** The human operates live capital; any execution is bounded,
+  guardrailed, journaled, and instantly haltable (safety_policy.md §1, §3).
+- No live money on an unvalidated strategy — validation precedes capital.
 - No vendor lock-in baked into the shared layer.
 - No secrets, credentials, or personal financial data in any repo.
 

@@ -4,27 +4,40 @@
 > constraints change — it is the first thing a new session reads after `CLAUDE.md`.
 > Not executable automation.
 
-*Last updated: 2026-07-20.*
+*Last updated: 2026-07-22.*
 
 ## Phase
 
 **Tooling build (research-tooling code authorized 2026-07-20).** The playbook
 bootstrap is complete and the first tooling code exists under `src/project_money/`
-with a green deterministic test suite (`tests/`, 81 tests): verification backbone
+with a green deterministic test suite (`tests/`, 170 tests): verification backbone
 (invariants incl. lookahead detector, metrics + deflated Sharpe, walk-forward,
 prequential codelength, evaluation cascade), leakage/vintage auditor,
 metric-falsification harness, hypothesis ledger + tabu memory, MDL complexity
-gate. **Still no provider adapters, no broker integration, no execution paths —
-those remain separately gated.**
+gate.
+
+**Scope corrected 2026-07-22: research-AND-trading.** The project's destination is
+**human-operated automated execution of validated strategies via Robinhood**,
+built through a gated ladder (dry-run → paper → shadow-canary → human-approved
+live → later bounded auto-trade). CLAUDE.md and the safety/broker/report/label
+docs were rewritten to match. **This corrects scope only — it authorizes no new
+build.** The current authorized state is unchanged: research-tooling code is
+built; **provider adapters, broker/execution code, and every execution phase
+remain separately gated and begin only on explicit authorization recorded here.**
 
 ## Current MVP scope
 
-- **In scope (once authorized):** a deterministic, reproducible research slice on
-  cached data — the smallest verifiable strategy screen with maker/checker
-  separation and canonical labels, plus a research report.
-- **Explicitly deferred:** any live data feed, provider adapters (Tiingo/FRED),
-  broker access (Robinhood), machine-learning / forecasting models, options and
-  cross-asset modeling.
+- **Immediate (once authorized):** a deterministic, reproducible research +
+  validation slice on cached data — the smallest verifiable strategy screen with
+  maker/checker separation and canonical labels, plus a report. This is the
+  proving ground the execution ladder is gated behind.
+- **The destination (gated, phased):** validated strategies executed via Robinhood
+  under the human-operated ladder in [docs/broker_strategy.md](docs/broker_strategy.md)
+  §3, with the full guardrail set (kill-switches, position/loss limits,
+  shadow-canary, journaling/reconciliation, dry-run) before any real money.
+- **Not yet authorized (each a separate gate):** provider adapters (Tiingo/FRED),
+  Robinhood data + execution paths, machine-learning / forecasting models, options
+  and cross-asset modeling.
 
 ## Approved decisions
 
@@ -40,27 +53,55 @@ those remain separately gated.**
   authorized** (harnesses, checkers, ledgers, registries, tests). Still
   excluded and separately gated: provider/data adapters, broker code, any
   execution path, live scheduling. No secrets; deterministic tests only.
+- 2026-07-22 — **Project scope corrected: research-and-trading, not
+  research-only.** The destination is human-operated automated execution of
+  validated strategies via Robinhood, built through the gated ladder
+  ([docs/broker_strategy.md](docs/broker_strategy.md) §3). CLAUDE.md +
+  safety_policy + broker_strategy + report_policy + label_policy rewritten to
+  match. Invariants preserved: the assistant builds/validates but never itself
+  executes live, moves funds, flips to live, or holds credentials; autonomy is
+  bounded/observable/stoppable; validation precedes capital. Reference guardrail
+  design = the user's Kalshi trading bot. **This decision corrects scope; it does
+  NOT authorize beginning any execution build — each phase still requires explicit
+  authorization recorded here.**
 
 ## Safety rules (in force)
 
-- Research-only; no autonomous financial actions (this system does not
-  buy/sell/trade/order or move funds).
-- **Robinhood is read-only, gated, and treated as a broker** — no execution path.
-- Human approval required before any outward-facing or irreversible step.
-- No secrets or credentials in the repo.
-- Canonical labels only (see [docs/label_policy.md](docs/label_policy.md)).
+- **Division of labor:** the assistant builds and validates; the **human operates
+  live capital.** The assistant never itself places a live order, moves funds,
+  flips a system to live, or handles live credentials (safety_policy.md §1).
+- **Validation before capital:** no strategy reaches live money without clearing
+  the full verification stack (maker ≠ checker, deflated Sharpe, leakage /
+  contamination audit, cost-inclusive eval, forward tracking).
+- **Bounded, observable, stoppable autonomy:** any execution runs inside hard
+  limits + kill-switches, fully journaled and reconciled, instantly haltable. No
+  unbounded or unattended autonomy.
+- **Phased, each step gated:** dry-run → paper → shadow-canary → human-approved
+  live → (later) bounded auto-trade; each phase begins only on explicit
+  authorization recorded here.
+- **No secrets** in the repo; credentials human-supplied at runtime.
+- Research-layer canonical labels only (docs/label_policy.md); execution
+  vocabulary confined to the gated execution module.
 
 ## Non-goals
 
-- No provider/data adapters, broker code, or execution paths (each separately
-  gated; research-tooling code is the only authorized code).
-- No autonomous financial action anywhere in scope.
+- **Assistant-executed trades or assistant-held credentials** — permanent; the
+  human operates live capital, always.
+- **Unbounded or unattended autonomy** — permanent; all automation stays limited,
+  journaled, and kill-switchable.
+- **Live money on an unvalidated strategy** — permanent; validation precedes
+  capital.
+- Beginning any build phase (providers, broker data, execution) without explicit
+  authorization recorded above. Execution is the gated *destination*, not a
+  current non-goal.
 - No v2 / v2.1 / v2.2 playbook layers (forecasting, macro, object-memory) adopted
-  yet — they remain in the shared playbook and can be pulled in later if authorized.
+  yet — available to pull in later if authorized.
 
 ## Active loops
 
-None. Loops, when built, produce findings and reports only — never actions.
+None. When built: research/monitoring loops produce findings and reports; an
+execution loop (Phase 6, separately authorized) runs only within hard limits +
+kill-switches, journaled and instantly haltable — never unbounded or unattended.
 
 | Loop | Cadence | Bounds / stop conditions | Status |
 | --- | --- | --- | --- |

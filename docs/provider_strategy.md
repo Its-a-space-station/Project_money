@@ -51,7 +51,7 @@ Normalization (not the provider) maps `RawObservation` to canonical schemas in
 | --- | --- | --- |
 | Tiingo | Equity / ETF prices, fundamentals, news | Read-only; respect terms & rate limits; licensed market data. |
 | FRED | Macro / economic time series | Read-only; public data; cite series ids. |
-| Robinhood | Market data + own-account context | **Read-only; gated; treated as a broker.** No execution path. See [broker_strategy.md](broker_strategy.md). |
+| Robinhood | Market data + own-account context; **execution is the gated destination** | Read-only data first; the human-operated order path is built later per the gated ladder in [broker_strategy.md](broker_strategy.md) §3 (assistant builds/validates, never operates live or holds credentials). |
 
 This table is **orientation, not authorization**. Adding any adapter requires
 lifting the bootstrap scope guard and passing the relevant promotion gate.

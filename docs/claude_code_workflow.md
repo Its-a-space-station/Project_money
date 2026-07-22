@@ -58,6 +58,8 @@ PLAN → SMALL CHANGE → VERIFY → RECORD → (repeat) → REPORT & STOP
 ## 5. When to escalate to the user
 
 - Any request that could cause an irreversible or outward-facing action.
-- Any request to add providers, brokers, or executable code during bootstrap.
-- Any ambiguity about a safety boundary — default to the research-only reading
-  and confirm.
+- Any request to begin a build phase (providers, broker data, execution) not yet
+  authorized in `STATE.md`.
+- Any ambiguity about a safety boundary — default to the conservative reading and
+  the division of labor in [safety_policy.md](safety_policy.md) §1 (the assistant
+  builds and validates; the human operates live capital), and confirm.
