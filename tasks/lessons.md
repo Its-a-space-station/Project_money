@@ -151,6 +151,24 @@ to checker-verified figures and mark the rest as digest-sourced. This is the
 documentation-layer instance of maker ≠ checker — it has now paid off in two
 consecutive batches (DSR formula in batch 3, Zeng figures in batch 4).
 
+### 2026-07-21 — Never pre-label evidence with the checker's imprimatur
+
+**Context:** The batch-5 synthesis draft labeled its central exhibit
+"(checker-verified)" at drafting time — before the checker had been
+launched. The subsequent independent pass happened to confirm those numbers
+(8/10 confirmed, 2 with corrections, 0 refuted), but the label was written
+on credit.
+**Lesson:** Writing "checker-verified" (or any verification status) before
+the check runs is self-attestation wearing the checker's uniform — the
+worst kind, because it *looks* like process compliance. If the checker had
+been skipped or interrupted, the false label would have survived into the
+committed record.
+**Apply:** Verification-status labels are written only *after* the
+verification event, by reference to its actual outcome ("independently
+checker-confirmed after drafting — see provenance"). Draft-stage claims
+carry `validation_pending` or no label. The provenance section records the
+checker's real score, including what it corrected.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

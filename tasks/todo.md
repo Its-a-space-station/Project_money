@@ -9,8 +9,8 @@
 
 - [~] **Await further information uploads from the user** and ingest each with
       the established pattern (agent fleet → synthesis → cross-check → repo
-      doc → commit on approval). Four batches complete so far (papers,
-      trading books, ML shelf, TS forecasting).
+      doc → commit on approval). Five batches complete so far (papers,
+      trading books, ML shelf, TS forecasting, graph ML).
 - [!] On the user's **end-of-information signal**: record the agreed 1–4
       ungating in STATE.md, finalize the MVP spec (H1–H3 seeds,
       delisting-aware panel), begin calibration-first execution
@@ -183,6 +183,54 @@ of any forecasting decision; and the foundation-model contamination audit
 gives us per-model vintage checks to demand before any zero-shot number is
 ever cited. Suite: 170 tests green after all edits. Not yet committed —
 awaiting user approval.
+
+## Information intake (batch 5 — graph-ML corpus: COMPLETE)
+
+- [x] Five fresh-read agents over exclusive clusters of the 25-PDF corpus
+      (`~/Documents/PWC_graph_ML/`): foundations/architectures;
+      evaluation/robustness; interpretability/symbolic;
+      GNN-time-series/physics; tooling/scale. Fresh-read pattern chosen
+      after confirming zero overlap with playbook/prior batches.
+- [x] Wrote [docs/graph_ml_synthesis.md](../docs/graph_ml_synthesis.md):
+      verdict "refines rather than expands" — no capability case for graph
+      ML on our panels; W1–W6 verifier queue (known-positive controls,
+      split-key provenance, cheap-heuristic nulls, full-search-space DSR
+      accounting, stratified noise probes, capacity matching); eight policy
+      clauses; gated-future pre-specs (graph-null ablation ladder with
+      ≤7-param typed-propagation null; distill-then-validate symbolic
+      pipeline; Frame-vs-GBDT spec; assignment-with-dustbin entity
+      resolution); 14-entry do-not-build ledger.
+- [x] Batch-4 MTGNN verdict adversarially re-tested: **confirmed** (GNN4TS
+      Table 2 classifies MTGNN as no-prior learned adjacency), reinforced
+      from two new directions (VGAE multiplicity; learned-graphs-only-win-
+      where-priors-exist), **boundary-corrected** (masked attention is O(d),
+      not O(N²) — condemned by SNR economics via the ablation ladder, not
+      by the multiplicity argument).
+- [x] **Maker≠checker on the synthesis**: independent checker verified 10
+      load-bearing claims — 8 confirmed, 2 confirmed-with-correction
+      (LinkFeat Hits@10-vs-MRR mislabel; GraphGPT variant merge), 0 refuted;
+      5 secondary misstatements corrected in place. Checker also caught the
+      maker pre-labeling evidence "checker-verified" before the check ran —
+      corrected; lesson added to `tasks/lessons.md`.
+- [x] Ungating re-rank check: **sharpens, does not reorder** the agreed
+      (unrecorded) 1–4 plan; third domain of nulls-win evidence behind the
+      ML deferral. Recording still waits on the user's end-of-information
+      signal.
+
+### Review — batch 5 (2026-07-21)
+
+The fresh-read fleet + checker pattern held for a third consecutive batch.
+The corpus produced no reason to build graph ML now and several reasons not
+to — while contributing the strongest new pipeline idea since batch 3
+(Cranmer's distill-then-validate: the symbolic form extracted from a
+network beat the network itself out-of-distribution) and a six-item
+verifier queue whose best entries (known-positive controls, split-key
+provenance, cheap-heuristic nulls) fill genuine false-negative and
+plumbing gaps the V1–V8 queue lacked. Checker score improved batch-over-
+batch (batch 4: 8/10 with 2 refuted; batch 5: 10/10 with 2 corrected),
+but it caught a new process defect — verification-status pre-labeling —
+now encoded as a lesson. Suite: 170 tests green after all edits. Not yet
+committed — awaiting user approval.
 
 ## Future (gated — not authorized by this list)
 

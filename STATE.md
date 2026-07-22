@@ -72,6 +72,21 @@ None. Loops, when built, produce findings and reports only — never actions.
 
 ## Last checkpoint
 
+- 2026-07-21 — **Information batch 5 ingested** (25 graph-ML papers, five
+  fresh-read agents + one independent checker):
+  [docs/graph_ml_synthesis.md](docs/graph_ml_synthesis.md). New territory
+  (zero playbook overlap) → fresh-read pattern. Verdict: **refines rather
+  than expands** — no capability case for graph ML on our panels; batch-4
+  MTGNN verdict confirmed + boundary-corrected (masked attention is O(d);
+  condemned by SNR economics, not multiplicity); W1–W6 verifier queue joins
+  V1–V8 (known-positive controls, split-key provenance, cheap-heuristic
+  nulls, search-space DSR accounting, stratified noise probes, capacity
+  matching); distill-then-validate symbolic pipeline pre-specified as the
+  future route for flexible ML; 14-entry do-not-build ledger. Checker: 10
+  load-bearing claims — 8 confirmed, 2 corrected, 0 refuted; caught the
+  maker pre-labeling evidence "checker-verified" before the check ran
+  (lesson recorded). Ungating verdict: **sharpens, does not reorder**.
+  Suite: **170 tests green**. Not yet committed.
 - 2026-07-21 — **Information batch 4 ingested** (26 time-series-forecasting
   papers, five verify-and-extract agents + one independent checker):
   [docs/ts_forecasting_integration.md](docs/ts_forecasting_integration.md).
