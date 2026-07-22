@@ -72,6 +72,23 @@ None. Loops, when built, produce findings and reports only — never actions.
 
 ## Last checkpoint
 
+- 2026-07-22 — **Information batch 6 ingested — FINAL BATCH; end-of-information
+  signal received** (73 stock-market ML/AI papers, eight adversarial-triage
+  agents + inline per-cluster verification + a synthesis-level checker):
+  [docs/stock_market_synthesis.md](docs/stock_market_synthesis.md). Direct-
+  domain, highest junk-density: **CREDIBLE 10 · PARTIAL 23 · JUNK 33 · OTHER
+  7**. Verdict: **zero validated tradeable daily-horizon edges across 73
+  papers** — the strongest in-domain confirmation of the whole doctrine (the
+  10 "credible" papers are credible as methods/exemplars only). Yield: the
+  **S1–S30 verifier/policy additions** (six are new leakage-detector GAPS:
+  intra-bar contemporaneous leakage, non-causal decomposition, non-causal
+  feature construction, calibration/process-fidelity axis, synthetic-feature
+  label leakage, horizon-monotonicity), a vintage-tagged dataset catalog, and
+  search discipline for the bounded search. Run as a resumable Workflow
+  (`wf_f7d99529-662`) after two Fable attempts died on spend/credit limits.
+  Verification: **57 claims → 52 confirmed, 5 corrected, 0 refuted**; one
+  proposed detector rejected on verification (recorded). Suite: **170 tests
+  green** (no code changed). **NOT committed; ungating NOT recorded.**
 - 2026-07-21 — **Information batch 5 ingested** (25 graph-ML papers, five
   fresh-read agents + one independent checker):
   [docs/graph_ml_synthesis.md](docs/graph_ml_synthesis.md). New territory
@@ -147,8 +164,19 @@ None. Loops, when built, produce findings and reports only — never actions.
 
 ## Next recommended action
 
-- **Continue information intake** (user is still uploading; ingestion pattern
-  documented in [HANDOFF.md](HANDOFF.md) §3.1). On the user's
-  end-of-information signal: record the agreed 1–4 ungating, finalize the MVP
-  spec (Tier-1 families H1–H3 on a delisting-aware daily equity/ETF panel),
-  and begin calibration-first execution per HANDOFF.md §3.2.
+- **Information intake is COMPLETE** (six batches; end-of-information signal
+  received 2026-07-22). The pending items are two explicit user decisions,
+  neither taken unilaterally:
+  1. **Approve the batch-6 commit** (docs/stock_market_synthesis.md +
+     STATE/todo/lessons; nothing staged yet).
+  2. **Approve recording the 1–4 ungating** in the approved-decisions ledger
+     above (proposed in
+     [docs/stock_market_synthesis.md](docs/stock_market_synthesis.md) §11).
+     This lifts scope guards, so it needs explicit in-session consent —
+     prior-session agreement is not current authorization.
+- On ungating approval: record the decisions here, finalize the MVP spec
+  (Tier-1 families H1–H3 on a delisting-aware daily equity/ETF panel), and
+  **build the S1–S30 verifier additions first** (calibration axis, the six
+  new leakage-detector GAPS, the known-bad specimen fixtures) — the MVP's
+  credibility rests on the harness rejecting batch-6's known-bad specimens
+  before any candidate is trusted.

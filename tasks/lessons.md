@@ -169,6 +169,65 @@ checker-confirmed after drafting — see provenance"). Draft-stage claims
 carry `validation_pending` or no label. The provenance section records the
 checker's real score, including what it corrected.
 
+### 2026-07-22 — A big fan-out that keeps dying on limits wants a resumable Workflow, not repeated Agent fan-outs
+
+**Context:** Batch 6 (73 papers, 8 reading agents) was attempted three times.
+Attempts 1–2 used loose Agent fan-out on Fable 5 and both died mid-run — first
+on a monthly-spend limit, then on credit exhaustion — with no cluster
+finishing and nothing salvageable; each restart re-read everything. Attempt 3
+ran the identical work as a Workflow (resumable, per-cluster verify built into
+the pipeline) and completed cleanly (16 agents, 0 errors).
+**Lesson:** For a large, expensive fan-out that has already shown it can die
+partway (limits, flaky API), the loose-Agent pattern has no recovery — a
+restart pays full cost again. A Workflow caches completed agents and resumes
+the unfinished ones, and it folds the checker stage into the same run.
+**Apply:** When a fan-out is (a) large, (b) expensive, and (c) at real risk of
+mid-run failure, prefer the Workflow tool with its resumeFromRunId recovery
+over N independent Agent calls. Keep the loose-Agent pattern for small or
+cheap fan-outs where a restart is trivial. (Ultracode also directs Workflow
+use by default when on.)
+
+### 2026-07-22 — A proposed detector can pass "sounds right" and fail verification — check the alarm's own logic
+
+**Context:** A batch-6 reading agent proposed a "pretrained-vs-from-scratch
+performance-gap alarm": flag benchmarks where pretrained-LLM forecasters
+cluster far above from-scratch models on pre-cutoff data, as a contamination
+smell. The verify pass refuted it: on the same StockNet window several
+*from-scratch* DL models also reach ~0.07 MSE, so low MSE is not a reliable
+contamination signature — the clustering argument does not hold.
+**Lesson:** Not every plausible-sounding verifier idea survives its own
+evidence. This one would have produced false contamination flags on clean
+from-scratch models. The underlying *gate* it was meant to support (reject
+results where the model's training cutoff overlaps the eval window) is sound;
+the *alarm heuristic* built on top of it was not.
+**Apply:** Before cataloguing a proposed check as an adoption, verify the
+check's own discriminating logic against the data it claims to separate — the
+same maker≠checker rigor we apply to findings applies to the tools that judge
+findings. Record rejected-on-verification proposals explicitly so they aren't
+silently re-proposed.
+
+### 2026-07-22 — A correct aggregate can hide a wrong membership; keep the synthesis-level checker
+
+**Context:** The batch-6 synthesis said "the 10 credible papers" and listed 10
+— but two were PARTIAL-tier (AlphaGen, VTA) swapped in for two genuinely
+CREDIBLE-tier papers (Nexus, AI-Analyst) that were dropped. The count "10" was
+right; the *membership* was wrong. The independent synthesis-level checker
+caught it. This is the THIRD consecutive batch where the synthesis step (my
+own writing) introduced an error the verified digests did not contain —
+batch 4 mixed MSE/MAE columns, batch 5 pre-labeled evidence "checker-verified"
+before the check, batch 6 mis-assigned tier membership.
+**Lesson:** (1) A correct total is not evidence of a correct set — verify
+membership/labels, not just sums (a two-for-two swap conserves the count).
+This is exactly the label-consistency failure label_policy exists to prevent.
+(2) The maker≠checker step must run on MY synthesis, not only on the
+subagents' digests: the digests were all verified, yet the integration on top
+of them still shipped a defect three times running. The synthesis-level
+checker has now paid for itself in three of three batches — it is not optional.
+**Apply:** After writing any synthesis that assigns items to labeled buckets,
+independently re-derive both the counts AND each item's bucket against the
+source tiering before the doc is relied on. Always run a checker on the
+integrating document, not just on its inputs.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

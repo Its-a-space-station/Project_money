@@ -7,10 +7,17 @@
 
 ## Active — information intake (ongoing)
 
-- [~] **Await further information uploads from the user** and ingest each with
-      the established pattern (agent fleet → synthesis → cross-check → repo
-      doc → commit on approval). Five batches complete so far (papers,
-      trading books, ML shelf, TS forecasting, graph ML).
+- [ ] **END-OF-INFORMATION SIGNAL RECEIVED (2026-07-22).** All six batches
+      ingested. **Decision point for the user: record the agreed 1–4
+      ungating in STATE.md's approved-decisions ledger** (deterministic MVP
+      on cached data → Tiingo+FRED read-only adapters → bounded strategy
+      search → paper-candidate forward tracking). Proposed in
+      `docs/stock_market_synthesis.md` §11; **NOT recorded — awaits explicit
+      in-session user approval** (prior-session agreement ≠ current consent;
+      lifting scope guards is a governance action). On approval: record the
+      decisions, finalize the MVP spec (H1–H3, delisting-aware panel), and
+      build the S1–S30 verifier additions first (the MVP's credibility rests
+      on the harness rejecting batch-6's known-bad specimens).
 - [!] On the user's **end-of-information signal**: record the agreed 1–4
       ungating in STATE.md, finalize the MVP spec (H1–H3 seeds,
       delisting-aware panel), begin calibration-first execution
@@ -231,6 +238,46 @@ batch (batch 4: 8/10 with 2 refuted; batch 5: 10/10 with 2 corrected),
 but it caught a new process defect — verification-status pre-labeling —
 now encoded as a lesson. Suite: 170 tests green after all edits. Not yet
 committed — awaiting user approval.
+
+## Information intake (batch 6 — stock-market ML/AI corpus: COMPLETE — FINAL BATCH)
+
+- [x] Eight adversarial-triage agents over exclusive clusters of the 73-file
+      corpus (`~/Documents/PWC_stock_market_papers/`), run as a **resumable
+      Workflow** (`wf_f7d99529-662`, 16 agents, 0 errors) after two prior
+      Fable-model attempts died mid-run on spend/credit limits. Direct-domain,
+      highest-junk-density corpus.
+- [x] Wrote [docs/stock_market_synthesis.md](../docs/stock_market_synthesis.md):
+      **73 papers → CREDIBLE 10 · PARTIAL 23 · JUNK 33 · OTHER 7**; verdict:
+      **zero validated tradeable daily-horizon edges** — strongest possible
+      in-domain confirmation of the whole doctrine. 10 "credible" papers are
+      credible as methods/exemplars, none as an edge. Yield: **S1–S30 verifier
+      additions** (contamination/vintage, nulls/metrics, six new leakage-
+      detector GAPS incl. intra-bar leakage + calibration axis, cost/universe,
+      new evaluation axes), a **dataset catalog** (vintage-tagged), and search
+      discipline for the future bounded search.
+- [x] **Maker≠checker built into the pipeline**: each cluster's load-bearing
+      claims independently verified against the PDFs — **57 checked → 52
+      CONFIRMED, 5 CONFIRMED-with-correction, 0 REFUTED** (cleanest of any
+      batch). One proposed detector (pretrained-vs-scratch MSE-gap alarm)
+      **rejected on verification** and recorded as not-adopted; lesson added.
+      Plus a final independent check on the synthesis doc's headline figures.
+- [x] Ungating re-rank check: the corpus **reinforces** the agreed 1–4 plan
+      and equips its first build step (S1 forward-tracking is the research-only
+      analogue of the live benchmarks; S1–S30 are the harness the MVP needs).
+
+### Review — batch 6 (2026-07-22)
+
+The final and richest batch. Because it is our direct domain, its junk exposed
+in-domain failure modes — the highest-yield methodological haul of the intake
+(S1–S30, six of them GAPS our harness could not previously catch). The single
+most valuable specimen is Mehtab-Sen Case III: 94.76% "OOS" accuracy from
+intra-bar OHLC leakage that a bar-granularity detector would pass. The flagship
+positive result is a negative: Stockformer's own LightGBM null wins the uptrend
+backtest net of costs while showing negative IC. DeepFund (NeurIPS) is the
+definitive contamination case (8/9 LLMs lose live). The resumable-Workflow
+approach recovered what two Fable attempts lost to spend limits. Suite: 170
+tests green (no code changed). Not yet committed — awaiting user approval, and
+separately awaiting the user's ungating decision (synthesis §11).
 
 ## Future (gated — not authorized by this list)
 
