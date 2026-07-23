@@ -36,26 +36,79 @@
       recorded in STATE.md. The 1–4 ungating decision (below) and any
       execution-phase authorization remain the user's to give.
 
-## Active — information intake (COMPLETE)
+## Active — information intake (COMPLETE) → ungating RECORDED
 
-- [ ] **END-OF-INFORMATION SIGNAL RECEIVED (2026-07-22).** All six batches
-      ingested. **Decision point for the user: record the agreed 1–4
-      ungating in STATE.md's approved-decisions ledger** (deterministic MVP
-      on cached data → Tiingo+FRED read-only adapters → bounded strategy
-      search → paper-candidate forward tracking). Proposed in
-      `docs/stock_market_synthesis.md` §11; **NOT recorded — awaits explicit
-      in-session user approval** (prior-session agreement ≠ current consent;
-      lifting scope guards is a governance action). On approval: record the
-      decisions, finalize the MVP spec (H1–H3, delisting-aware panel), and
-      build the S1–S30 verifier additions first (the MVP's credibility rests
-      on the harness rejecting batch-6's known-bad specimens).
-- [!] On the user's **end-of-information signal**: record the agreed 1–4
-      ungating in STATE.md, finalize the MVP spec (H1–H3 seeds,
-      delisting-aware panel), begin calibration-first execution
-      (HANDOFF.md §3.2).
-- [ ] Optional while waiting (documentation, no gate needed; user go-ahead):
-      pre-draft MVP task specs + checker-owned cascade threshold config;
-      transcribe batch-2 coverage gaps (trading_corpus_synthesis.md §8).
+- [x] **1–4 ungating RECORDED in STATE.md (2026-07-22, user authorized
+      in-session).** All six batches ingested; the user gave explicit in-session
+      approval to (1) deterministic MVP on cached data, (2) Tiingo+FRED read-only
+      adapters, (3) bounded strategy search, (4) paper-candidate forward tracking.
+      Recorded in STATE.md approved-decisions.
+- [x] **First research phase authorized (2026-07-22).** Verifier hardening first,
+      then read-only providers, then the cached MVP screen (H1–H3, delisting-aware
+      panel). See "research phase 1" below.
+- [ ] Optional (documentation, no gate needed): transcribe batch-2 coverage gaps
+      (trading_corpus_synthesis.md §8) into the research backlog.
+
+## Active — research phase 1: verifier hardening (authorized 2026-07-22)
+
+> Edge-first: make the harness's passes and rejections trustworthy BEFORE trusting
+> any strategy screen. Pure research-tooling code — no provider, no execution, no
+> secrets. maker ≠ checker throughout; every new detector gets bracket tests
+> (clean signal passes, junk fails) AND an adversarial red-team pass; suite stays
+> green + deterministic.
+
+- [x] Localize: extracted the exact S1–S30 / V1–V8 / W1–W6 spec + known-bad
+      specimen list (V/W items live in §4.1, not §3), and mapped the current
+      harness API + extension points. Baseline confirmed: 170 green in ~1.5s.
+- [~] Known-bad specimen fixture set — the five §9 must-reject specimens.
+      DONE: Mehtab-Sen intra-bar (S6), CNN-LSTM shuffled split (S9),
+      MarketSenseAI time-travel (S3, existing vintage auditor), Nabipour
+      flat-horizon R²≈1.0 (S5/S10). REMAINING: Paper 8 compound
+      (S9-scaler/S11/S16/S18). (Stockformer + DeepFund are §4 metric-falsification
+      / positive-control exemplars, not in the §9 five.) **4 of 5 §9 closed.**
+      `tests/specimens.py` holds each specimen + its causal counterpart.
+- [~] S6 — intra-bar contemporaneous-leakage detector (`leakage/intrabar.py`):
+      built (execute-and-compare, exhaustive positions, wide vol-scaled probes,
+      tight-atol sign/NaN change, determinism pre-check, cold-reindex statefulness
+      probe, fail-closed). 16 tests incl. fail-before + 7 red-team regressions.
+      **research-skeptic round 1: 5 holes → all fixed. round 2: verified all 5
+      closed, found 3 more (memoization HIGH, max_test_bars fast-path HIGH-cond,
+      DC-offset MED) → memoization + DC-offset fixed + regression-tested;
+      max_test_bars documented best-effort (verification debt). round-3
+      confirmation IN PROGRESS.** Lessons recorded (purity precondition;
+      verifier knobs are attack surfaces).
+- [~] S9 — temporal split-integrity detector (`validation/split_integrity.py`):
+      catches CNN-LSTM shuffled split; passes forward + purged walk-forward.
+      **Red-team r1: tz/NaT fail-open + purge/embargo overclaim → fixed. r2:
+      confirmed closed; found dup/unsorted `full_index` crash/FN → fixed
+      (fail-closed on non-unique/non-monotonic).** 13 tests green. Round-3 pending.
+- [~] S5/S10 — forecast diagnostics (`validation/forecast_diagnostics.py`):
+      **S5 redesigned around the persistence-null skill test** (r1), then a
+      **three-regime design** (r2): integratedness inference (not lag-1 autocorr) →
+      integrated=persistence-skill / autocorrelated-stationary=abstain /
+      returns=R² bar; catches the regime-blind-R² returns leak and no longer
+      false-flags overlapping returns. S10: distributed-growth + fail-closed on
+      non-finite. 18 tests green. Lesson recorded (gate-against-the-null).
+      **Round-3 verification IN PROGRESS.**
+- [ ] **Verification debt (tracked, not silent):** (a) `max_test_bars` fast path
+      is a best-effort screen — its subsample is data-derived but recomputable;
+      exhaustive (default) is the trustworthy mode. (b) Fully adversarial *stateful*
+      signal_fns cannot be certified in-process (true fix = process/object
+      isolation); the cold-reindex probe closes the common index-keyed case only.
+      Both apply to `check_no_lookahead` as well.
+- [x] S3 — MarketSenseAI time-travel: confirmed the existing vintage auditor
+      labels a post-cutoff model contaminated; locked with a named regression
+      test. (S2 feature-level extension noted as a small future add.)
+- [ ] S7 — non-causal decomposition leakage (EMD/DWT/correlation-graph fit on test).
+- [ ] S8 — non-causal feature construction (global scaling/spline on full sample).
+- [ ] S26 — calibration / process-fidelity axis (ECE) in metrics + cascade.
+- [ ] S2/S3 — model/embedder training-cutoff vs eval-window contamination gate.
+- [ ] S4/S16/S12 — mandatory persistence null, cost model, min-track-record-length.
+- [ ] S1 — `frozen_at` + strictly-post-timestamp forward tracking (research-only).
+- [ ] V1–V8 (batch-4) + W1–W6 (batch-5) verifier items — sequence after the
+      S-items; dedupe overlaps first.
+- [ ] research-skeptic red-team of every new gate ("score high / slip past any way
+      you can"); exploits found are gate defects to fix before the gate is trusted.
 
 ## Bootstrap (done)
 

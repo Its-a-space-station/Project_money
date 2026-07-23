@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 
 from project_money.leakage import VintageRecord, audit_vintages
+from tests.specimens import marketsenseai_vintage_records
 
 OOS_START = date(2024, 1, 1)
 OOS_END = date(2024, 12, 31)
@@ -63,3 +64,19 @@ class TestVintageAudit:
     def test_bad_window_raises(self):
         with pytest.raises(ValueError):
             audit_vintages([], oos_start=OOS_END, oos_end=OOS_START, formation_date=FORMED)
+
+
+class TestSpecimenCoverage:
+    """§9 known-bad specimens the vintage auditor must reject (calibration-first)."""
+
+    def test_marketsenseai_time_travel_contaminated(self):
+        # An LLM whose knowledge cutoff (2024-06) postdates the OOS start it is
+        # 'predicting' — the MarketSenseAI time-travel pattern (S3).
+        overall, findings = audit_vintages(
+            marketsenseai_vintage_records(),
+            oos_start=OOS_START,
+            oos_end=OOS_END,
+            formation_date=FORMED,
+        )
+        assert overall == "contaminated"
+        assert any("knowledge cutoff" in r for f in findings for r in f.reasons)

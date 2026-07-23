@@ -12,7 +12,13 @@ from project_money.validation.invariants import (
     check_weights_valid,
 )
 from project_money.validation.metrics import compute_metrics, deflated_sharpe
-from project_money.validation.walkforward import walk_forward_splits
+from project_money.validation.walkforward import walk_forward_splits, Split
+from project_money.validation.split_integrity import check_temporal_holdout
+from project_money.validation.forecast_diagnostics import (
+    r_squared,
+    check_returns_not_levels,
+    check_horizon_monotonicity,
+)
 from project_money.validation.prequential import prequential_log_loss, gaussian_null_forecaster
 from project_money.validation.cascade import Stage, StageResult, CascadeResult, run_cascade
 
@@ -23,6 +29,11 @@ __all__ = [
     "compute_metrics",
     "deflated_sharpe",
     "walk_forward_splits",
+    "Split",
+    "check_temporal_holdout",
+    "r_squared",
+    "check_returns_not_levels",
+    "check_horizon_monotonicity",
     "prequential_log_loss",
     "gaussian_null_forecaster",
     "Stage",

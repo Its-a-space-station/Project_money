@@ -270,6 +270,78 @@ anyway. The next build work is the research/validation engine + verifier
 hardening (S1–S30), aimed at honestly answering "is there an edge?" — and being
 willing to answer "no."
 
+### 2026-07-22 — Execute-and-compare detectors assume a PURE signal_fn; state defeats them
+
+**Context:** Building the S6 intra-bar leakage detector (`check_intrabar_causality`,
+execute-and-compare like `check_no_lookahead`). Two red-team rounds found that a
+signal_fn which *memoizes its output keyed by date* passes cleanly: the first call
+(the base) caches the real leak, and every perturbed call returns the stale cached
+value, so base == perturbed and no leak is detected. The determinism pre-check
+(same input twice) does not catch it — a cache handles identical input happily.
+This blind spot applies to **`check_no_lookahead` too** (it re-runs signal_fn on
+truncated data and assumes purity); it is a property of the whole
+execute-and-compare family, not one detector.
+**Lesson:** Any "re-run the function and compare outputs" causality check silently
+assumes the function is a *pure* function of its input. Statefulness (memoization,
+call-count logic, global caches) breaks that assumption and cannot be fully
+certified in-process — the true fix is process/object isolation. A partial defense
+that catches the common index-keyed case: run the perturbation on a **cold-reindexed
+copy** (a disjoint index, *distinct per call* — reusing one cold index lets the
+memoizer cache the probe itself), so a date-keyed cache must recompute; flag a
+divergence *distinctly* ("appears stateful/impure or calendar-dependent — cannot
+certify"), never silently as "leakage."
+**Apply:** (1) State the purity precondition explicitly in every execute-and-compare
+detector's docstring. (2) Add a cold-reindex statefulness probe with a fresh index
+per call. (3) Treat full adversarial-statefulness certification as **verification
+debt** whose real fix is isolation — record it, don't pretend the in-process gate
+closes it. (4) When a red-team fix is itself non-trivial (the probe had a
+cache-warming bug), re-verify the fix, not just the original hole.
+
+### 2026-07-22 — A verifier's own sampling/tolerance knobs are attack surfaces
+
+**Context:** The first S6 draft had a fixed evenly-spaced test grid (a leak could
+zero itself exactly at the tested bars — recomputable and gameable), a fixed
+±2/5% perturbation band (blind to threshold leaks and un-scaled to volatility),
+and an `atol + rtol*|value|` comparison (a large DC offset inflated the tolerance
+so a sub-tolerance leak recovered by a downstream demean+sign slipped through).
+All three were demonstrated bypasses.
+**Lesson:** A verifier's internal parameters — *which* points it samples, *how far*
+it perturbs, *what tolerance* it compares at — are part of its attack surface, just
+like a gate's error handling (2026-07-20 lesson). A recomputable sample set is
+dodgeable; a fixed perturbation band has blind zones; a relative tolerance scaled
+by |value| is inflatable by an offset. Deterministic-but-recomputable sampling
+trades reproducibility against un-gameability and cannot fully satisfy both — the
+fast-path subsample is best-effort, and exhaustive is the trustworthy mode.
+**Apply:** Prefer exhaustive checking where affordable (no sample to game); make
+perturbations wide and data/vol-scaled (span the field's realized range both ways);
+compare causal invariance at a *tight absolute* tolerance (a truly causal output is
+bit-identical when unused inputs change) plus a scale-invariant sign check. Where a
+knob must trade safety for speed, document it as best-effort and record the residual
+as verification debt.
+
+### 2026-07-22 — Gate against the null, not a fixed threshold; never let self-attested metadata disable a check
+
+**Context:** The first S5 forecast-diagnostic used a fixed bar (R² > 0.95 on
+levels) gated on a caller-supplied ``is_levels`` flag. Red-team broke it two ways:
+(1) a near-perfect level leak degraded to R²≈0.94 sailed under the fixed bar
+(R² and lag-corr both measure fit, so they move together — no independent
+backstop); (2) flipping ``is_levels=False`` disabled the R² check entirely, so an
+R²≈0.9999 "returns forecast" passed. It also false-flagged legitimate AR/momentum
+returns forecasts (corr(ŷ_t, r_{t-1})=1 is signal on returns, not persistence).
+**Lesson:** (a) A fixed metric threshold is a line an optimizer tunes right up to;
+the honest test compares against the relevant **null** — for near-integrated
+levels, skill vs the persistence forecast (levels already score R²≈0.99, so
+"beats persistence" is the real bar, and a degraded leak scores *negative* skill).
+(b) **Never let candidate-supplied metadata gate the existence of a check** —
+infer the property yourself (level-ness from the target's lag-1 autocorrelation)
+and keep an unconditional implausibility flag. (c) A check that fires on a
+legitimate strategy family (calendar seasonality, AR/momentum) is as harmful as a
+miss — scope it to where the failure mode actually applies.
+**Apply:** Design every gate as "beats the honest null by a margin," not "clears a
+fixed metric." Infer, never trust, the flags that decide which checks run. Pair
+each new detector's specimen (must-fail) with a legitimate near-neighbor
+(must-pass) so false positives surface in the bracket test.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

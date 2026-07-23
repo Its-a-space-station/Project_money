@@ -8,6 +8,14 @@
 
 ## Phase
 
+**Research build authorized 2026-07-22 (user, in-session).** The 1–4 ungating is
+recorded (see Approved decisions) and the **first research build phase — verifier
+hardening (S1–S30 / V1–V8 / W1–W6) → read-only Tiingo/FRED data → cached MVP
+screen — is authorized.** Scope is lifted toward **research work only**; **no
+execution path is authorized** — any Robinhood order path, fund movement, or live
+scheduling stays gated behind a validated survivor (edge-first sequencing). Build
+is underway (verifier hardening first).
+
 **Tooling build (research-tooling code authorized 2026-07-20).** The playbook
 bootstrap is complete and the first tooling code exists under `src/project_money/`
 with a green deterministic test suite (`tests/`, 170 tests): verification backbone
@@ -35,9 +43,14 @@ remain separately gated and begin only on explicit authorization recorded here.*
   under the human-operated ladder in [docs/broker_strategy.md](docs/broker_strategy.md)
   §3, with the full guardrail set (kill-switches, position/loss limits,
   shadow-canary, journaling/reconciliation, dry-run) before any real money.
-- **Not yet authorized (each a separate gate):** provider adapters (Tiingo/FRED),
-  Robinhood data + execution paths, machine-learning / forecasting models, options
-  and cross-asset modeling.
+- **Now authorized (2026-07-22, research scope only):** verifier hardening
+  (S1–S30 / V1–V8 / W1–W6), **Tiingo + FRED read-only** adapters with a
+  point-in-time cache, bounded strategy/factor search, paper-candidate forward
+  tracking, the cached MVP screen.
+- **Still gated (each a separate gate):** any Robinhood data or execution path,
+  fund movement, live scheduling, machine-learning / forecasting models, options
+  and cross-asset modeling. Execution stays gated behind a validated survivor
+  (edge-first).
 
 ## Approved decisions
 
@@ -74,6 +87,20 @@ remain separately gated and begin only on explicit authorization recorded here.*
   intended, money-saving outcome (CLAUDE.md §11, §20). The next build work is
   therefore **edge discovery** (research engine on real data + the S1–S30 verifier
   hardening), never the execution path.
+- 2026-07-22 — **1–4 ungating RECORDED and first research phase AUTHORIZED (user,
+  in-session).** Scope guards lifted toward **research work only**: (1)
+  deterministic MVP on cached data, (2) **Tiingo + FRED read-only** adapters with a
+  point-in-time / vintage-safe cache, (3) bounded strategy/factor search, (4)
+  paper-candidate forward tracking (`frozen_at`, strictly-post-timestamp scoring).
+  **First build phase authorized:** verifier hardening (S1–S30 / V1–V8 / W1–W6) —
+  lead with the known-bad specimen fixtures + calibration axis (S26) +
+  leakage-detector GAPS (S6/S7/S8) — then read-only provider data, then the cached
+  MVP screen. **NOT authorized (unchanged):** any Robinhood data or execution path,
+  fund movement, live scheduling, ML/forecasting models, options/cross-asset —
+  execution stays gated behind a **validated survivor** (edge-first). Invariants
+  unchanged: the assistant builds/validates and never executes live or holds
+  credentials; validation before capital; bounded/observable/stoppable autonomy;
+  no secrets.
 
 ## Safety rules (in force)
 
@@ -123,6 +150,24 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-22 — **Verifier-hardening checkpoint committed (research phase 1 in
+  progress).** Built S6 (intra-bar contemporaneous leakage), S9 (temporal
+  split-integrity), S5+S10 (forecast diagnostics), and verified S3 (MarketSenseAI
+  via the existing vintage auditor) — closing **4 of the 5 §9 known-bad
+  specimens** (remaining: Paper 8 compound). Every detector adversarially
+  red-teamed (S6 ×3 rounds; S9/S5/S10 ×2 rounds, round-3 running at commit time):
+  ~16 real holes found and fixed, each kept as a permanent regression specimen.
+  Suite: **220 passed, 1 xfailed** (documented compute-once-cache isolation
+  limit), deterministic. Verification debt tracked (max_test_bars best-effort;
+  adversarial statefulness needs isolation). Pure research-tooling — no
+  provider/execution paths, no secrets. Committed to `main`, not pushed.
+- 2026-07-22 — **1–4 ungating recorded + first research phase (verifier hardening)
+  authorized by the user in-session.** Research-scope guards lifted (cached MVP,
+  Tiingo/FRED read-only, bounded search, forward tracking); execution stays gated
+  behind a validated survivor. Build kicked off with localization of the
+  S1–S30 / V1–V8 / W1–W6 spec against the current harness, then the known-bad
+  specimen fixtures (fail-before/pass-after). No secrets; no provider/execution
+  write paths. Suite baseline: 170 green.
 - 2026-07-22 — **Information batch 6 ingested — FINAL BATCH; end-of-information
   signal received** (73 stock-market ML/AI papers, eight adversarial-triage
   agents + inline per-cluster verification + a synthesis-level checker):
@@ -215,22 +260,20 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Next recommended action
 
-- **Information intake COMPLETE (six batches); governance pivot COMMITTED**
-  (`9339490`). The work now is **edge discovery** — building the research /
-  validation engine and hunting for a validated edge. The Robinhood execution
-  build is gated behind a *survivor* (edge-first sequencing, approved
-  2026-07-22); it is not the next work and may never be built if nothing
-  survives.
-- The pending items are explicit user authorizations, none taken unilaterally:
-  1. **Record the 1–4 ungating** in the approved-decisions ledger above
-     (proposed in [docs/stock_market_synthesis.md](docs/stock_market_synthesis.md)
-     §11). This lifts scope guards toward *research* work (cached MVP, read-only
-     provider adapters, bounded search, forward-tracking) — not execution.
-  2. **Authorize the first build phase.** Recommended: the **S1–S30 verifier
-     hardening** (calibration axis, the six new leakage-detector GAPS, the
-     known-bad specimen fixtures) + read-only provider data, then the cached
-     MVP screen (Tier-1 families H1–H3 on a delisting-aware daily equity/ETF
-     panel). The engine's job is to answer *"is there an edge?"* honestly —
-     including "no."
-- Execution (any Robinhood order path) is reached only after a strategy clears
-  the full verification stack. Until then, no broker/execution build.
+- **Decisions made (2026-07-22): 1–4 ungating recorded; first research phase
+  authorized.** Both authorizations were given by the user in-session; the
+  approved-decisions ledger records them. The Robinhood execution build remains
+  gated behind a *validated survivor* (edge-first) and may never be built if
+  nothing survives — that is the intended, money-saving outcome.
+- **In progress — verifier hardening (research phase 1):** lead with the
+  known-bad specimen fixtures (prove the harness rejects batch-6's junk before any
+  pass is trusted — fail-before/pass-after), the calibration/ECE axis (S26), and
+  the leakage-detector GAPS (S6 intra-bar, S7 non-causal decomposition, S8
+  non-causal feature construction), plus the persistence/cost/DSR gates and S1
+  forward-tracking. maker ≠ checker on every new gate; research-skeptic red-teams
+  each. See `tasks/todo.md` → "research phase 1".
+- **Then:** read-only Tiingo + FRED adapters into a point-in-time cache
+  (delisting-aware equity/ETF panel) → cached MVP screen (H1–H3 seeds; consider
+  leading with H3/volatility, the best-evidenced seed).
+- **Still gated:** any Robinhood data or execution path, ML/forecasting, options.
+  Execution is reached only after a strategy clears the full verification stack.
