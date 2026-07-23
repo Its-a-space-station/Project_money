@@ -60,50 +60,52 @@
 - [x] Localize: extracted the exact S1–S30 / V1–V8 / W1–W6 spec + known-bad
       specimen list (V/W items live in §4.1, not §3), and mapped the current
       harness API + extension points. Baseline confirmed: 170 green in ~1.5s.
-- [~] Known-bad specimen fixture set — the five §9 must-reject specimens.
-      DONE: Mehtab-Sen intra-bar (S6), CNN-LSTM shuffled split (S9),
-      MarketSenseAI time-travel (S3, existing vintage auditor), Nabipour
-      flat-horizon R²≈1.0 (S5/S10). REMAINING: Paper 8 compound
-      (S9-scaler/S11/S16/S18). (Stockformer + DeepFund are §4 metric-falsification
-      / positive-control exemplars, not in the §9 five.) **4 of 5 §9 closed.**
+- [x] **Known-bad specimen fixture set — ALL FIVE §9 specimens closed
+      (calibration-first milestone reached).** Mehtab-Sen intra-bar (S6),
+      CNN-LSTM shuffled split (S9), MarketSenseAI time-travel (S3), Nabipour
+      flat-horizon (S5/S10), Paper 8 compound (scaler-leak via check_no_lookahead
+      + S11 impossible-accuracy + S16 cost gate). (Stockformer + DeepFund are §4
+      metric-falsification / positive-control exemplars, not in the §9 five.)
       `tests/specimens.py` holds each specimen + its causal counterpart.
-- [~] S6 — intra-bar contemporaneous-leakage detector (`leakage/intrabar.py`):
-      built (execute-and-compare, exhaustive positions, wide vol-scaled probes,
-      tight-atol sign/NaN change, determinism pre-check, cold-reindex statefulness
-      probe, fail-closed). 16 tests incl. fail-before + 7 red-team regressions.
-      **research-skeptic round 1: 5 holes → all fixed. round 2: verified all 5
-      closed, found 3 more (memoization HIGH, max_test_bars fast-path HIGH-cond,
-      DC-offset MED) → memoization + DC-offset fixed + regression-tested;
-      max_test_bars documented best-effort (verification debt). round-3
-      confirmation IN PROGRESS.** Lessons recorded (purity precondition;
-      verifier knobs are attack surfaces).
-- [~] S9 — temporal split-integrity detector (`validation/split_integrity.py`):
+- [x] S6 — intra-bar contemporaneous-leakage detector (`leakage/intrabar.py`):
+      execute-and-compare, exhaustive positions, wide vol-scaled probes, tight-atol
+      sign/NaN change, determinism pre-check, cold-reindex statefulness probe,
+      fail-closed. 19 tests (fail-before + 9 red-team regressions). **3 red-team
+      rounds converged**: r1 5 holes, r2 3 more (all fixed), r3 all confirmed
+      closed. 1 xfail = compute-once-cache isolation limit (verification debt).
+- [x] S9 — temporal split-integrity detector (`validation/split_integrity.py`):
       catches CNN-LSTM shuffled split; passes forward + purged walk-forward.
-      **Red-team r1: tz/NaT fail-open + purge/embargo overclaim → fixed. r2:
-      confirmed closed; found dup/unsorted `full_index` crash/FN → fixed
-      (fail-closed on non-unique/non-monotonic).** 13 tests green. Round-3 pending.
-- [~] S5/S10 — forecast diagnostics (`validation/forecast_diagnostics.py`):
-      **S5 redesigned around the persistence-null skill test** (r1), then a
-      **three-regime design** (r2): integratedness inference (not lag-1 autocorr) →
-      integrated=persistence-skill / autocorrelated-stationary=abstain /
-      returns=R² bar; catches the regime-blind-R² returns leak and no longer
-      false-flags overlapping returns. S10: distributed-growth + fail-closed on
-      non-finite. 18 tests green. Lesson recorded (gate-against-the-null).
-      **Round-3 verification IN PROGRESS.**
+      **3 red-team rounds, robust**: tz/NaT/dup/unsorted `full_index` all
+      fail-closed; honest purge/embargo scope + `full_index` gap check. 13 tests.
+- [x] S5/S10 — forecast diagnostics (`validation/forecast_diagnostics.py`):
+      **3 red-team rounds**. S5 = three-regime persistence-null design
+      (integratedness inference; returns R² bar; abstain on overlapping returns) +
+      r3 fixes (returns bar raised to 0.5 & framed as review; integratedness
+      hysteresis). S10 = distributed-growth + fail-closed on non-finite (robust).
+      19 tests. Lesson recorded (gate-against-the-null).
+- [~] S11/S16 (Paper 8) — `validation/metric_plausibility.py`: impossible-accuracy
+      alarm (S11) + cost gate (S16). Closes the Paper 8 compound specimen with the
+      scaler-leak (check_no_lookahead). 8 tests green. **Red-team pending.**
 - [ ] **Verification debt (tracked, not silent):** (a) `max_test_bars` fast path
-      is a best-effort screen — its subsample is data-derived but recomputable;
-      exhaustive (default) is the trustworthy mode. (b) Fully adversarial *stateful*
-      signal_fns cannot be certified in-process (true fix = process/object
-      isolation); the cold-reindex probe closes the common index-keyed case only.
-      Both apply to `check_no_lookahead` as well.
+      is a best-effort screen — subsample data-derived but recomputable; exhaustive
+      (default) is trustworthy. (b) Fully adversarial *stateful* signal_fns need
+      process isolation (cold-reindex probe closes the index-keyed case only) —
+      applies to `check_no_lookahead` too. (c) S5 abstain regime is a
+      metric-honesty gap for φ<0.97 autocorrelated-stationary repackaged-persistence
+      (not capital-at-risk; backstopped by the honest-null requirement +
+      forward-tracking). (d) S5 delegates contemporaneous leaks to the one-bar
+      execution lag + S6 + walk-forward — **TODO: dedicated red-team confirming
+      those cover autocorrelated/level targets** (skeptic-recommended). (e) S5
+      returns bar is a review flag (needs_human_review), not auto-reject — wire
+      accordingly when the cascade integrates these checks.
 - [x] S3 — MarketSenseAI time-travel: confirmed the existing vintage auditor
       labels a post-cutoff model contaminated; locked with a named regression
       test. (S2 feature-level extension noted as a small future add.)
 - [ ] S7 — non-causal decomposition leakage (EMD/DWT/correlation-graph fit on test).
 - [ ] S8 — non-causal feature construction (global scaling/spline on full sample).
 - [ ] S26 — calibration / process-fidelity axis (ECE) in metrics + cascade.
-- [ ] S2/S3 — model/embedder training-cutoff vs eval-window contamination gate.
-- [ ] S4/S16/S12 — mandatory persistence null, cost model, min-track-record-length.
+- [ ] S2 — model/embedder training-cutoff vs eval-window contamination (extend vintage to LLM-derived features).
+- [ ] S18 — universe/survivorship point-in-time audit (Paper 8's remaining channel); S12 min-track-record-length; S4 mandatory persistence null as a cascade stage.
 - [ ] S1 — `frozen_at` + strictly-post-timestamp forward tracking (research-only).
 - [ ] V1–V8 (batch-4) + W1–W6 (batch-5) verifier items — sequence after the
       S-items; dedupe overlaps first.

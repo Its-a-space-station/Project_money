@@ -317,6 +317,22 @@ def overlapping_returns_honest_forecast(
     return overlap.rename("ret"), y_pred
 
 
+def strong_but_honest_returns_forecast(
+    n_obs: int = 400, *, seed: int = 47, target_r2: float = 0.4, start: str = "2020-01-01"
+) -> tuple[pd.Series, pd.Series]:
+    """S5 round-3 #3 (must PASS): a rare but genuine strong returns edge (R²≈0.4).
+    Most honest returns edges are R²<0.05, but a low-noise / cross-sectional signal
+    can be stronger — S5 must not HARD-reject the rare winner (returns bar raised to
+    0.5, framed as review). Low-autocorrelation returns regime."""
+    idx = pd.bdate_range(start, periods=n_obs)
+    rng = np.random.default_rng(seed)
+    signal = rng.normal(0.0, 0.01, n_obs)
+    noise_sd = 0.01 * ((1.0 - target_r2) / target_r2) ** 0.5
+    y_true = pd.Series(signal + rng.normal(0.0, noise_sd, n_obs), index=idx, name="ret")
+    y_pred = pd.Series(signal, index=idx, name="pred")  # forecasts the true signal component
+    return y_true, y_pred
+
+
 def trending_level_plausible_leak(
     n_obs: int = 400, *, seed: int = 43, k: float = 0.11, start: str = "2020-01-01"
 ) -> tuple[pd.Series, pd.Series]:
@@ -329,6 +345,29 @@ def trending_level_plausible_leak(
     y_true = pd.Series(close, index=idx, name="level")
     y_pred = (y_true + k * float(y_true.std()) * rng.normal(0.0, 1.0, n_obs)).rename("pred")
     return y_true, y_pred
+
+
+# --- S9-scaler / S11 / S16: Paper 8 compound leak -----------------------------
+
+def paper8_scaler_leak_signal(prices: pd.DataFrame) -> pd.DataFrame:
+    """Paper 8 scaler-leak: min-max scale the WHOLE price panel (fit on train+test)
+    before forming the signal — a non-causal transform. check_no_lookahead must
+    catch it (truncation changes the full-sample min/max)."""
+    scaled = (prices - prices.min()) / (prices.max() - prices.min())  # full-sample min/max — leak
+    w = (scaled > 0.5).astype(float)
+    gross = w.sum(axis=1).replace(0, np.nan)
+    return w.div(gross, axis=0).fillna(0.0)
+
+
+def paper8_impossible_accuracy() -> float:
+    """Paper 8's reported OOS directional accuracy (in its 0.96–0.99 band). S11
+    must flag it as implausible."""
+    return 0.973
+
+
+def paper8_cost_free_result() -> dict[str, float]:
+    """Paper 8's cost-free backtest metrics. S16 must flag the zero cost."""
+    return {"cost_bps": 0.0, "sharpe_gross": 2.4, "sharpe_net": 2.4}
 
 
 # --- S3: model-vintage contamination (MarketSenseAI time-travel) ---------------

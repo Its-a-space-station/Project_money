@@ -18,6 +18,7 @@ from tests.specimens import (
     nabipour_level_forecast,
     overlapping_returns_honest_forecast,
     returns_contemporaneous_leak_moderate,
+    strong_but_honest_returns_forecast,
     trending_level_plausible_leak,
 )
 
@@ -87,6 +88,12 @@ class TestReturnsNotLevels:
         # integrated regime.
         y_true, y_pred = trending_level_plausible_leak()
         assert not check_returns_not_levels(y_true, y_pred, is_levels=True).passed
+
+    def test_strong_but_honest_returns_edge_not_hard_rejected(self):
+        # round-3 #3: a rare genuine strong returns edge (R²≈0.4) must PASS the
+        # raised returns bar (0.5) — don't kill the winner.
+        y_true, y_pred = strong_but_honest_returns_forecast(target_r2=0.4)
+        assert check_returns_not_levels(y_true, y_pred).passed
 
 
 class TestHorizonMonotonicity:

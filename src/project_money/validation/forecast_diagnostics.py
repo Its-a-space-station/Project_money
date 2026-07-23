@@ -107,7 +107,7 @@ def check_returns_not_levels(
     *,
     is_levels: bool | None = None,
     max_r2: float = 0.99,
-    returns_r2_bar: float = 0.15,
+    returns_r2_bar: float = 0.5,
     min_persistence_skill: float = 0.0,
     integrated_skill_bar: float = 0.5,
     integratedness_threshold: float = 2.0,
@@ -137,8 +137,16 @@ def check_returns_not_levels(
 
     integ = _integratedness(a)
     acf1 = _lag1_autocorr(a)
+    # Integrated if variance clearly grows with the window, with hysteresis: a
+    # near-integrated series (moderate ratio + very high autocorrelation) also gets
+    # the integrated checks, so repackaged persistence there is not waved through.
     integrated = (is_levels is True) or (
-        is_levels is None and np.isfinite(integ) and integ > integratedness_threshold
+        is_levels is None
+        and np.isfinite(integ)
+        and (
+            integ > integratedness_threshold
+            or (integ > 0.75 * integratedness_threshold and np.isfinite(acf1) and acf1 > 0.97)
+        )
     )
     autocorrelated_stationary = (
         not integrated and np.isfinite(acf1) and acf1 > autocorr_threshold
@@ -175,7 +183,8 @@ def check_returns_not_levels(
         if np.isfinite(r2) and r2 > returns_r2_bar:
             reasons.append(
                 f"R²={r2:.4f} exceeds the returns bar {returns_r2_bar} on a low-autocorrelation "
-                "returns target — implausibly high for an honest returns forecast (leakage)"
+                "returns target — implausibly high for an honest returns forecast; mandatory audit "
+                "(route to needs_human_review, not auto-reject — a rare strong edge is possible)"
             )
 
     return CheckResult("returns_not_levels", not reasons, reasons)

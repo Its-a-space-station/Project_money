@@ -150,6 +150,18 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-23 — **Calibration-first milestone: ALL FIVE §9 known-bad specimens are
+  now rejected by the harness.** Added the Paper 8 gates (S11 impossible-accuracy
+  alarm + S16 cost gate, `validation/metric_plausibility.py`; its scaler-leak is
+  caught by the existing `check_no_lookahead`) and applied the S5 round-3 fixes
+  (returns R² bar raised to 0.5 and framed as review to avoid killing a rare
+  strong edge; integratedness hysteresis). S6/S9/S5/S10 red-teams **converged over
+  3 rounds each**; S11/S16 red-team running. Suite: **229 passed, 1 xfailed**,
+  deterministic. Verification debt extended (S5 abstain-regime honesty gap;
+  contemporaneous-leak delegation to execution-lag + S6 + walk-forward, with a
+  TODO for a dedicated red-team of that; S5 returns bar is a review flag). Pure
+  research-tooling; no provider/execution/secrets. Second checkpoint committed to
+  `main`, not pushed.
 - 2026-07-22 — **Verifier-hardening checkpoint committed (research phase 1 in
   progress).** Built S6 (intra-bar contemporaneous leakage), S9 (temporal
   split-integrity), S5+S10 (forecast diagnostics), and verified S3 (MarketSenseAI

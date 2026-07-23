@@ -19,6 +19,10 @@ from project_money.validation.forecast_diagnostics import (
     check_returns_not_levels,
     check_horizon_monotonicity,
 )
+from project_money.validation.metric_plausibility import (
+    check_directional_accuracy_plausible,
+    check_cost_gate,
+)
 from project_money.validation.prequential import prequential_log_loss, gaussian_null_forecaster
 from project_money.validation.cascade import Stage, StageResult, CascadeResult, run_cascade
 
@@ -34,6 +38,8 @@ __all__ = [
     "r_squared",
     "check_returns_not_levels",
     "check_horizon_monotonicity",
+    "check_directional_accuracy_plausible",
+    "check_cost_gate",
     "prequential_log_loss",
     "gaussian_null_forecaster",
     "Stage",
