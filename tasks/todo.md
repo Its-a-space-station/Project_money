@@ -145,8 +145,40 @@
 - [ ] S1 — `frozen_at` + strictly-post-timestamp forward tracking (research-only).
 - [ ] V1–V8 (batch-4) + W1–W6 (batch-5) verifier items — sequence after the
       S-items; dedupe overlaps first.
-- [ ] research-skeptic red-team of every new gate ("score high / slip past any way
-      you can"); exploits found are gate defects to fix before the gate is trusted.
+- [x] research-skeptic red-team of every new gate — done for all detectors built
+      this phase (S6 ×3, S9/S5/S10 ×3, S11/S16 ×1, S7/S8 + core ×1, S26 ×2);
+      still applies to any FUTURE gate.
+
+### Review — verifier-hardening phase (2026-07-22 → 2026-07-23)
+
+**Done & verified.** Research phase 1 (edge-first verifier hardening) delivered the
+leakage/plausibility/calibration detection layer, all red-teamed to convergence and
+committed in six commits (`e6bf78b`→`8339581`, `main`, unpushed). Suite: **263
+passed, 2 xfailed, deterministic** (170 baseline preserved + 93 new).
+
+- **All five §9 known-bad specimens are provably rejected** (Mehtab-Sen intra-bar
+  S6, CNN-LSTM shuffle S9, Nabipour flat-horizon S5/S10, MarketSenseAI S3, Paper 8
+  compound S11/S16+scaler). **All four §6-GAP items built** (S6 intra-bar, S7/S8
+  non-causal transforms, S26 calibration axis).
+- **The red-team was load-bearing, not ceremony:** ~30 real holes found & fixed,
+  incl. two CRITICAL ones in *already-committed* code — the `check_no_lookahead`
+  grid-gaming/untested-tail flaw (exhaustive cutoffs) and the S26
+  perfect-forecaster false-positive (bootstrap null band). Unit tests missed both.
+- **9 durable lessons** recorded (execute-and-compare purity precondition;
+  finite-horizon leaks need exhaustive cutoffs; verifier knobs are attack surfaces;
+  gate-against-the-null; NaN fail-open + sibling fail-direction; recompute-don't-
+  trust; one-sided alarms must be composed; binary pass/fail conflates
+  reject-vs-review; bootstrap-null band for finite-sample-biased gate metrics).
+- **Verification debt tracked** (7 items): `max_test_bars` best-effort;
+  adversarial-statefulness needs isolation (2 xfails); S5 abstain-regime honesty
+  gap + contemporaneous-leak delegation; review-disposition cascade wiring; S18
+  survivorship un-built; S26 sub-finest-bin / small-N inherent limits.
+
+**Deferred to next phase (each gated, none started):** provider adapters
+(Tiingo/FRED read-only → point-in-time cache) → cached MVP screen (H1–H3,
+delisting-aware) — the edge-discovery run; plus the long-tail verifier items below
+(S1/S2/S18, V/W dedup) as the MVP needs them. Beginning provider adapters is a new
+build step requiring explicit go-ahead per CLAUDE.md §6.
 
 ## Bootstrap (done)
 
