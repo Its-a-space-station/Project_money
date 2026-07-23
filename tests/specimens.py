@@ -534,6 +534,19 @@ def within_bin_anticalibration(n_obs: int = 5000, *, seed: int = 109) -> tuple[n
     return p, y
 
 
+def subfloor_confident_error(
+    n_obs: int = 2000, *, cluster: int = 19, seed: int = 113
+) -> tuple[np.ndarray, np.ndarray]:
+    """S26 round-2 R2-1 (must be FLAGGED): a confident-wrong cluster BELOW the old
+    MCE count floor (19 samples at 0.99 → outcome 0) inside a calibrated book. The
+    per-bin studentized test (no count floor) must catch it regardless of count."""
+    rng = np.random.default_rng(seed)
+    n_bulk = n_obs - cluster
+    p = np.concatenate([np.full(n_bulk, 0.5), np.full(cluster, 0.99)])
+    y = np.concatenate([(rng.random(n_bulk) < 0.5).astype(float), np.zeros(cluster)])
+    return p, y
+
+
 def high_abstention_forecast(
     n_obs: int = 5000, *, answered: int = 500, seed: int = 111
 ) -> tuple[np.ndarray, np.ndarray]:

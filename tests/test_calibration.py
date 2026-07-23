@@ -11,6 +11,7 @@ from tests.specimens import (
     confident_tail_miscalibration,
     high_abstention_forecast,
     overconfident_forecast,
+    subfloor_confident_error,
     well_calibrated_forecast,
     within_bin_anticalibration,
 )
@@ -81,13 +82,13 @@ class TestCheckCalibration:
         p, y = well_calibrated_forecast(n_obs=60)
         assert check_calibration(p, y).passed
 
-    def test_confident_tail_flagged_by_mce(self):
+    def test_confident_tail_flagged(self):
         # Finding 2: ~9% maximally-confident-wrong tail — count-weighted ECE forgives
-        # it, MCE-with-count-floor must catch it.
+        # it; the per-bin studentized test must catch the confident sub-region.
         p, y = confident_tail_miscalibration()
         result = check_calibration(p, y)
         assert not result.passed
-        assert any("MCE" in r for r in result.reasons)
+        assert any("systematically wrong" in r for r in result.reasons)
 
     def test_within_bin_anticalibration_flagged(self):
         # Finding 3: anti-calibration hidden within a wide bin — the finer-binning
@@ -101,3 +102,11 @@ class TestCheckCalibration:
         result = check_calibration(p, y)
         assert not result.passed
         assert any("coverage" in r for r in result.reasons)
+
+    def test_subfloor_confident_error_flagged(self):
+        # Round-2 R2-1: a confident-wrong cluster below the old MCE count floor —
+        # the per-bin studentized test (no count gate) must catch it.
+        p, y = subfloor_confident_error()
+        result = check_calibration(p, y)
+        assert not result.passed
+        assert any("systematically wrong" in r for r in result.reasons)

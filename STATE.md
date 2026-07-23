@@ -150,6 +150,15 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-23 — **S26 round-2 hardening committed (6th checkpoint).** Round-2
+  re-verify confirmed the round-1 fixes closed and found residuals (MCE count-floor
+  seam FN; multiple-testing FP inflation 8–13% vs 5%; degenerate-0/1; coverage) →
+  redesigned to a **per-bin studentized test with a family-wise studentized-max
+  null** (controls multiplicity, no count floor), conf-clipped noise floor,
+  coverage on (pred,outcome) pairs, order-invariant sorted bootstrap. Both S26
+  red-team rounds converged. Suite: **263 passed, 2 xfailed**, deterministic. The
+  entire §6-GAP verifier set (S6/S7/S8/S26) + S9/S5/S10/S11/S16/S3 is built and
+  red-teamed to convergence. Committed to `main`, not pushed.
 - 2026-07-23 — **S26 calibration axis committed (5th checkpoint) — §6-GAP verifier
   set complete.** Added `validation/calibration.py` (ECE + reliability curve +
   `check_calibration`), the last §6-GAP evaluation axis. Its red-team found the

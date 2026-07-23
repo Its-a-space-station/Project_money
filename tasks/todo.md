@@ -131,10 +131,15 @@
       PERFECT forecaster ~89% of the time at N=50 (CRITICAL FP) and count-weighted
       ECE forgives a confident-tail (CRITICAL FN) → redesigned:** seeded
       parametric-bootstrap null band (self-calibrating; the documented CI debt made
-      load-bearing), MCE-with-count-floor, a finer-binning pass, and a coverage
-      floor. 15 tests incl. all 4 finding regressions. Lesson recorded. **Round-2
-      re-verification IN PROGRESS.** (Compose with prequential_log_loss for
-      proper-scoring-rule blow-ups — noted.)
+      load-bearing), a finer-binning pass, and a coverage floor. Lesson recorded.
+      **Round 2 confirmed all 4 closed; found residuals (MCE count-floor seam FN,
+      multiple-testing FP inflation, degenerate-0/1, coverage-on-predictions) →
+      redesigned:** per-bin *studentized* test with a family-wise studentized-max
+      null (controls multiplicity; no count floor), conf-clipped noise floor,
+      coverage on (pred,outcome) pairs, order-invariant sorted bootstrap. 16 tests
+      incl. round-1 + R2-1 regressions. **Both red-team rounds converged.**
+      (Compose with prequential_log_loss for proper-scoring blow-ups; sub-finest-bin
+      anti-calibration + small-N power loss are inherent, tracked.)
 - [ ] S2 — model/embedder training-cutoff vs eval-window contamination (extend vintage to LLM-derived features).
 - [ ] S18 — universe/survivorship point-in-time audit (Paper 8's remaining channel); S12 min-track-record-length; S4 mandatory persistence null as a cascade stage.
 - [ ] S1 — `frozen_at` + strictly-post-timestamp forward tracking (research-only).
