@@ -250,6 +250,26 @@ live. Read STATE.md for the current authorized phase — execution is the gated
 live → bounded auto-trade) begins only on explicit authorization recorded in
 STATE.md. Validation always precedes capital.
 
+### 2026-07-22 — Edge before infrastructure: no execution bot until a validated edge exists (the Kalshi lesson)
+
+**Context:** The user's prior project built a complete, well-guardrailed Kalshi
+trading bot *first*, then discovered there was no durable discoverable edge, and
+the project stalled — effort sunk into machinery with nothing valid to run. The
+user explicitly does not want to repeat that pattern in Project_money.
+**Lesson:** Execution infrastructure has ~zero value without a validated strategy
+to execute. Building the bot first inverts the risk. Our own six-corpus intake
+independently found discoverable daily-horizon edges are rare and the impressive
+ones are usually contaminated — which makes "infra-first" especially dangerous
+here. This is a recurring, cross-project pattern, not a one-off.
+**Apply:** Sequence **edge-first**. The execution build (any Robinhood order path)
+is gated behind a strategy that has actually cleared the full verification stack —
+not merely behind a phase authorization. Recorded in STATE.md approved-decisions
+(2026-07-22). If validation yields no survivor, that is a valid, money-saving
+outcome (correct rejection), never a problem to route around by building the bot
+anyway. The next build work is the research/validation engine + verifier
+hardening (S1–S30), aimed at honestly answering "is there an edge?" — and being
+willing to answer "no."
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

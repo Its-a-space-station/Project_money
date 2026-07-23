@@ -64,6 +64,16 @@ remain separately gated and begin only on explicit authorization recorded here.*
   design = the user's Kalshi trading bot. **This decision corrects scope; it does
   NOT authorize beginning any execution build — each phase still requires explicit
   authorization recorded here.**
+- 2026-07-22 — **Edge-first sequencing (the Kalshi lesson).** No Robinhood
+  execution build begins until (a) the research/validation engine is complete and
+  (b) at least one strategy has actually cleared the full verification stack — a
+  **discovered, validated edge exists.** The prior Kalshi project built the bot
+  first, found no discoverable edge, and stalled; we do not repeat that. Execution
+  is gated not merely behind phase authorization but behind **a survivor.** If
+  validation yields no survivor, **no bot is built** — correct rejection is the
+  intended, money-saving outcome (CLAUDE.md §11, §20). The next build work is
+  therefore **edge discovery** (research engine on real data + the S1–S30 verifier
+  hardening), never the execution path.
 
 ## Safety rules (in force)
 
@@ -205,19 +215,22 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Next recommended action
 
-- **Information intake is COMPLETE** (six batches; end-of-information signal
-  received 2026-07-22). The pending items are two explicit user decisions,
-  neither taken unilaterally:
-  1. **Approve the batch-6 commit** (docs/stock_market_synthesis.md +
-     STATE/todo/lessons; nothing staged yet).
-  2. **Approve recording the 1–4 ungating** in the approved-decisions ledger
-     above (proposed in
-     [docs/stock_market_synthesis.md](docs/stock_market_synthesis.md) §11).
-     This lifts scope guards, so it needs explicit in-session consent —
-     prior-session agreement is not current authorization.
-- On ungating approval: record the decisions here, finalize the MVP spec
-  (Tier-1 families H1–H3 on a delisting-aware daily equity/ETF panel), and
-  **build the S1–S30 verifier additions first** (calibration axis, the six
-  new leakage-detector GAPS, the known-bad specimen fixtures) — the MVP's
-  credibility rests on the harness rejecting batch-6's known-bad specimens
-  before any candidate is trusted.
+- **Information intake COMPLETE (six batches); governance pivot COMMITTED**
+  (`9339490`). The work now is **edge discovery** — building the research /
+  validation engine and hunting for a validated edge. The Robinhood execution
+  build is gated behind a *survivor* (edge-first sequencing, approved
+  2026-07-22); it is not the next work and may never be built if nothing
+  survives.
+- The pending items are explicit user authorizations, none taken unilaterally:
+  1. **Record the 1–4 ungating** in the approved-decisions ledger above
+     (proposed in [docs/stock_market_synthesis.md](docs/stock_market_synthesis.md)
+     §11). This lifts scope guards toward *research* work (cached MVP, read-only
+     provider adapters, bounded search, forward-tracking) — not execution.
+  2. **Authorize the first build phase.** Recommended: the **S1–S30 verifier
+     hardening** (calibration axis, the six new leakage-detector GAPS, the
+     known-bad specimen fixtures) + read-only provider data, then the cached
+     MVP screen (Tier-1 families H1–H3 on a delisting-aware daily equity/ETF
+     panel). The engine's job is to answer *"is there an edge?"* honestly —
+     including "no."
+- Execution (any Robinhood order path) is reached only after a strategy clears
+  the full verification stack. Until then, no broker/execution build.
