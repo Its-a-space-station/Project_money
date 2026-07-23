@@ -370,6 +370,122 @@ def paper8_cost_free_result() -> dict[str, float]:
     return {"cost_bps": 0.0, "sharpe_gross": 2.4, "sharpe_net": 2.4}
 
 
+# --- S7 / S8: non-causal transform leakage (decomposition / feature construction) ---
+# Each non-causal transform is a preprocessing step fit on the WHOLE sample — the
+# leak class purge/embargo walk-forward misses; check_causal_transform must catch
+# it, and pass the causal (past-only) counterpart.
+
+def global_minmax_transform(data: pd.DataFrame) -> pd.DataFrame:
+    """S8: min-max scaling fit on the whole sample (per column) — non-causal."""
+    rng = (data.max() - data.min()).replace(0, np.nan)
+    return (data - data.min()) / rng
+
+
+def expanding_minmax_transform(data: pd.DataFrame) -> pd.DataFrame:
+    """Causal counterpart: expanding (past-only) min-max scaling."""
+    lo = data.expanding().min()
+    hi = data.expanding().max()
+    return (data - lo) / (hi - lo).replace(0, np.nan)
+
+
+def full_sample_detrend_transform(data: pd.DataFrame) -> pd.DataFrame:
+    """S7: subtract a linear trend fit on the whole sample (a decomposition fit on
+    the test data), per column — non-causal."""
+    t = np.arange(len(data), dtype=float)
+    out = {col: data[col].to_numpy(dtype=float) - np.polyval(
+        np.polyfit(t, data[col].to_numpy(dtype=float), 1), t
+    ) for col in data.columns}
+    return pd.DataFrame(out, index=data.index)
+
+
+def expanding_detrend_transform(data: pd.DataFrame) -> pd.DataFrame:
+    """Causal counterpart: subtract the expanding (past-only) mean."""
+    return data - data.expanding().mean()
+
+
+def centered_smooth_transform(data: pd.DataFrame) -> pd.DataFrame:
+    """S8: centered rolling mean — bidirectional, uses future points (non-causal)."""
+    return data.rolling(5, center=True, min_periods=1).mean()
+
+
+def trailing_smooth_transform(data: pd.DataFrame) -> pd.DataFrame:
+    """Causal counterpart: trailing rolling mean."""
+    return data.rolling(5, min_periods=1).mean()
+
+
+# --- shared causality-core red-team regressions (harden check_no_lookahead too) ---
+
+# The evenly-spaced cutoff grid the OLD core used (n=400, min_history=30) — the
+# positions a leak could dodge onto. The hardened core tests every row instead.
+_NAIVE_LOOKAHEAD_GRID = [30, 82, 135, 188, 240, 293, 346, 399]
+
+
+def grid_gamed_lookahead_signal(prices: pd.DataFrame) -> pd.DataFrame:
+    """Core Finding 1 (CRITICAL): a 1-day lookahead (weights from NEXT day's move)
+    zeroed on exactly the old 8-cutoff grid rows. A finite-horizon leak shows only
+    at the boundary row, so evenly-spaced cutoffs missed it — exhaustive cutoffs
+    must catch it on the ungamed rows."""
+    fut_up = (prices.shift(-1) > prices).astype(float)  # uses next day — lookahead
+    gross = fut_up.sum(axis=1).replace(0, np.nan)
+    w = fut_up.div(gross, axis=0).fillna(0.0)
+    for p in _NAIVE_LOOKAHEAD_GRID:
+        if p < len(w):
+            w.iloc[p] = 0.0
+    return w
+
+
+def tail_fullsample_leak_transform(data: pd.DataFrame) -> pd.DataFrame:
+    """Core Finding 2 (HIGH): identity except the most-recent 10% of rows are
+    divided by the FULL-sample max — a leak in the tail the old grid never tested
+    (the newest data a deployed signal acts on). Exhaustive cutoffs must catch it."""
+    out = data.copy()
+    tail = int(len(data) * 0.9)
+    out.iloc[tail:] = data.iloc[tail:] / data.max()
+    return out
+
+
+class StatefulCountingTransform:
+    """Core Finding 6: cross-call state makes the output vary between calls — must be
+    reported as stateful/nondeterministic, NOT mislabeled 'non-causal transform'."""
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def __call__(self, data: pd.DataFrame) -> pd.DataFrame:
+        self.calls += 1
+        return data.rolling(5, min_periods=1).mean() * self.calls
+
+
+def string_output_transform(data: pd.DataFrame) -> pd.DataFrame:
+    """Core Finding 7: non-numeric output must fail closed, not crash."""
+    return pd.DataFrame("x", index=data.index, columns=data.columns)
+
+
+def column_dropping_transform(data: pd.DataFrame) -> pd.DataFrame:
+    """Core Finding 8: a shape change under truncation must fail closed, not crash."""
+    out = data.copy()
+    if len(data) < 400:
+        out = out.drop(columns=[data.columns[0]])
+    return out
+
+
+class FitOnceScaler:
+    """Core Finding 3 (KNOWN LIMITATION — needs isolation): fits mean/std on its
+    first call (the full panel) and freezes them, so every truncated recompute
+    reuses the full-sample params and matches. A full-sample-fit scaler that evades
+    in-process execute-and-compare; the transform analogue of ComputeOnce."""
+
+    def __init__(self) -> None:
+        self.mu = None
+        self.sigma = None
+
+    def __call__(self, data: pd.DataFrame) -> pd.DataFrame:
+        if self.mu is None:
+            self.mu = data.mean()
+            self.sigma = data.std().replace(0, np.nan)
+        return (data - self.mu) / self.sigma
+
+
 # --- S3: model-vintage contamination (MarketSenseAI time-travel) ---------------
 
 def marketsenseai_vintage_records() -> list[VintageRecord]:

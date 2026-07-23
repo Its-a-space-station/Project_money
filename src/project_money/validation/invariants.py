@@ -114,64 +114,171 @@ def check_weights_valid(
     return CheckResult("weights_valid", not reasons, reasons)
 
 
+def _coerce_output(out, expected_index: pd.Index, expected_ncols: int | None):
+    """Coerce an ``fn`` output to a float matrix aligned to ``expected_index`` (and,
+    if given, ``expected_ncols`` columns). Returns ``(matrix, None)`` or, on any
+    structural fault, ``(None, reason)`` — so callers fail closed, never crash."""
+    if isinstance(out, pd.Series):
+        out = out.to_frame()
+    if not isinstance(out, pd.DataFrame):
+        return None, "output is not a Series/DataFrame — fail closed"
+    if not out.index.equals(expected_index):
+        return None, "output index does not match input index"
+    try:
+        mat = out.to_numpy(dtype=float)
+    except (ValueError, TypeError):
+        return None, "non-numeric output — fail closed"
+    if expected_ncols is not None and mat.shape[1] != expected_ncols:
+        return None, f"output column count changed ({mat.shape[1]} vs {expected_ncols}) — fail closed"
+    return mat, None
+
+
+def _rows_change(exp: np.ndarray, tr: np.ndarray, *, atol: float, rtol: float) -> str | None:
+    """NaN-pattern + value change between two equal-shape matrices; reason or None."""
+    nan_e, nan_t = np.isnan(exp), np.isnan(tr)
+    if (nan_e != nan_t).any():
+        return f"NaN pattern differs at {int((nan_e != nan_t).sum())} entries"
+    valid = ~nan_e
+    if valid.any() and not np.allclose(tr[valid], exp[valid], atol=atol, rtol=rtol):
+        diff = np.abs(tr[valid] - exp[valid])
+        n_bad = int((diff > atol + rtol * np.abs(exp[valid])).sum())
+        return f"{n_bad} entries differ (max abs {float(diff.max()):.3e})"
+    return None
+
+
+def _whole_window_causal_check(
+    fn: Callable[[pd.DataFrame], pd.DataFrame],
+    data: pd.DataFrame,
+    *,
+    name: str,
+    leak_label: str,
+    min_history: int = 30,
+    max_cutoffs: int | None = None,
+    atol: float = 1e-10,
+    rtol: float = 1e-9,
+) -> CheckResult:
+    """Shared whole-window execute-and-compare causality core.
+
+    Re-runs ``fn`` on truncated inputs: a causal function's output at any row s is
+    unchanged when the data after s is removed, so at cutoff t=s the boundary row
+    reveals any leak that used data after s. Because a *finite-horizon* leak (e.g.
+    a 1-day lookahead) is visible only at that boundary row, cutoffs are
+    **exhaustive** — every row from ``min_history`` on becomes a boundary exactly
+    once — rather than an evenly-spaced grid a leak could zero itself onto, and the
+    most-recent rows (where a deployed signal acts) are covered. ``max_cutoffs``
+    caps this to a dense stride for very large panels; that fast path is
+    best-effort (a strided subset is in principle recomputable — verification
+    debt), so exhaustive (the default) is the trustworthy mode.
+
+    A determinism/statefulness pre-check runs ``fn`` twice on the full input; a
+    result that differs is reported as stateful/nondeterministic (distinct from
+    leakage), never mislabeled. Non-numeric / misaligned / shape-changing output
+    fails closed. Comparison uses a relative tolerance so a legitimate causal
+    transform with length-dependent float rounding on large-magnitude data is not
+    false-rejected. NOTE a *compute-once / full-sample-fit* stateful ``fn`` (e.g. a
+    scaler fit on its first, full-panel call) is NOT caught in-process — that needs
+    process/instance isolation (verification debt; the ``ComputeOnce`` analogue).
+    """
+    full_mat, err = _coerce_output(fn(data), data.index, None)
+    if err is not None:
+        return CheckResult(name, False, [err])
+
+    # Determinism / statefulness pre-check — a stale/varying fn cannot be audited.
+    full_mat2, err2 = _coerce_output(fn(data), data.index, full_mat.shape[1])
+    if err2 is not None or _rows_change(full_mat, full_mat2, atol=atol, rtol=rtol) is not None:
+        return CheckResult(
+            name,
+            False,
+            ["fn is nondeterministic or stateful across calls (two runs on identical input differ) "
+             "— execute-and-compare cannot audit it; make it a pure, reset-per-call function (DS2)"],
+        )
+
+    n = len(data)
+    if n <= min_history:
+        return CheckResult(name, False, ["not enough history for cutoff testing"])
+
+    positions = np.arange(min_history, n)  # exhaustive: no grid to game, tail covered
+    if max_cutoffs is not None and len(positions) > max_cutoffs:
+        stride = int(np.ceil(len(positions) / max_cutoffs))
+        positions = positions[::stride]  # best-effort dense stride (recomputable → verification debt)
+
+    reasons: list[str] = []
+    ncols = full_mat.shape[1]
+    for idx in positions:
+        idx = int(idx)
+        trunc_mat, err = _coerce_output(fn(data.iloc[: idx + 1]), data.index[: idx + 1], ncols)
+        if err is not None:
+            reasons.append(f"cutoff {data.index[idx]}: {err}")
+            continue
+        change = _rows_change(full_mat[: idx + 1], trunc_mat, atol=atol, rtol=rtol)
+        if change is not None:
+            reasons.append(f"cutoff {data.index[idx]}: {change} over the overlap — {leak_label}")
+
+    return CheckResult(name, not reasons, reasons)
+
+
+def check_causal_transform(
+    transform_fn: Callable[[pd.DataFrame], pd.DataFrame],
+    data: pd.DataFrame,
+    *,
+    min_history: int = 30,
+    max_cutoffs: int | None = None,
+    atol: float = 1e-10,
+    rtol: float = 1e-9,
+) -> CheckResult:
+    """Whole-window causality check for a feature/preprocessing TRANSFORM — verifier
+    items S7 (non-causal decomposition: EMD/EEMD/VMD/DWT/wavelet, correlation/
+    covariance graphs) and S8 (non-causal feature construction: global min-max /
+    standard scaling, bidirectional interpolation/spline, global smoothing).
+
+    Generalizes ``check_no_lookahead`` from a weight panel to any numeric
+    DataFrame-producing transform, so a preprocessing/decomposition step can be
+    audited *directly* — the corpus gap is precisely that these transforms are fit
+    on the whole sample in a step *outside* the model, which purge/embargo
+    walk-forward does not catch. Require the entire pipeline (preprocessing
+    included) to be ``transform_fn``: a transform fit train-only and applied
+    causally per window is invariant under truncation; one fit on the full sample
+    is not. (A stateful fit-once transform object needs isolation — see the core.)
+    """
+    return _whole_window_causal_check(
+        transform_fn,
+        data,
+        name="causal_transform",
+        leak_label="non-causal transform",
+        min_history=min_history,
+        max_cutoffs=max_cutoffs,
+        atol=atol,
+        rtol=rtol,
+    )
+
+
 def check_no_lookahead(
     signal_fn: Callable[[pd.DataFrame], pd.DataFrame],
     prices: pd.DataFrame,
     *,
-    n_cutoffs: int = 8,
     min_history: int = 30,
+    max_cutoffs: int | None = None,
     atol: float = 1e-10,
+    rtol: float = 1e-9,
 ) -> CheckResult:
     """Execute-and-compare lookahead detector.
 
-    ``signal_fn`` maps a price panel to a weight panel on the same index. For
-    each of ``n_cutoffs`` evenly spaced cutoff dates t, the function is re-run
-    on ``prices.loc[:t]`` and its **entire output** must equal the full-sample
-    output over the overlapping window (within ``atol``): a causal function's
-    value at any date s <= t depends only on data up to s, so truncation at t
-    cannot change it. Comparing the whole window (not just the cutoff row)
-    catches leaks that thresholding hides at the boundary — e.g. full-sample
-    z-scoring, whose contamination shows up at *earlier* dates.
-
-    Deterministic by construction: cutoffs are evenly spaced, not sampled.
+    ``signal_fn`` maps a price panel to a weight panel on the same index. It is
+    re-run on truncated histories and its **entire output** must equal the
+    full-sample output over the overlap: a causal function's value at any date
+    s <= t depends only on data up to s. Cutoffs are **exhaustive** (every row
+    becomes a boundary once) so a finite-horizon leak (a 1-day lookahead is visible
+    only at the boundary row) cannot dodge onto an evenly-spaced grid, and the
+    most-recent rows are covered. See ``_whole_window_causal_check`` for the
+    determinism pre-check, fail-closed coercion, and the isolation caveat.
     """
-    reasons: list[str] = []
-
-    full = signal_fn(prices)
-    if not full.index.equals(prices.index):
-        return CheckResult(
-            "no_lookahead",
-            False,
-            ["signal_fn output index does not match input index"],
-        )
-
-    usable = prices.index[min_history:]
-    if len(usable) == 0:
-        return CheckResult("no_lookahead", False, ["not enough history for cutoff testing"])
-
-    positions = np.linspace(0, len(usable) - 1, num=min(n_cutoffs, len(usable)), dtype=int)
-    cutoffs = usable[positions]
-
-    for t in cutoffs:
-        truncated = signal_fn(prices.loc[:t])
-        expected = full.loc[:t]
-        if not truncated.index.equals(expected.index):
-            reasons.append(f"cutoff {t}: truncated output index mismatch")
-            continue
-        tr = truncated.to_numpy(dtype=float)
-        ex = expected.to_numpy(dtype=float)
-        nan_tr, nan_ex = np.isnan(tr), np.isnan(ex)
-        if (nan_tr != nan_ex).any():
-            n_bad = int((nan_tr != nan_ex).sum())
-            reasons.append(f"cutoff {t}: NaN pattern differs at {n_bad} entries — lookahead")
-            continue
-        valid = ~nan_tr
-        if not np.allclose(tr[valid], ex[valid], atol=atol, rtol=0.0):
-            diff = np.abs(tr[valid] - ex[valid])
-            n_bad = int((diff > atol).sum())
-            reasons.append(
-                f"cutoff {t}: {n_bad} weight entries differ over the overlapping window "
-                f"(max abs diff {float(diff.max()):.3e}) — lookahead"
-            )
-
-    return CheckResult("no_lookahead", not reasons, reasons)
+    return _whole_window_causal_check(
+        signal_fn,
+        prices,
+        name="no_lookahead",
+        leak_label="lookahead",
+        min_history=min_history,
+        max_cutoffs=max_cutoffs,
+        atol=atol,
+        rtol=rtol,
+    )

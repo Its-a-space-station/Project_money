@@ -385,6 +385,36 @@ checks (S11, S5 returns bar, S10, S16 rate-advisory) a machine-readable
 "needs_human_review" disposition rather than registering them as rejecting stages.
 Tracked as verification debt in `tasks/todo.md` until the cascade wiring exists.
 
+### 2026-07-23 — Whole-window truncation only tests the boundary row; finite-horizon leaks need EXHAUSTIVE cutoffs
+
+**Context:** Red-teaming the new `check_causal_transform` exposed a CRITICAL flaw
+in the *shared* causality core — and therefore in the already-committed, "trusted"
+`check_no_lookahead`. A 1-day lookahead is invisible to whole-window truncation at
+interior rows: at cutoff t, every row s<t is reproduced bit-identically because
+`data[s+1]` is still present; the leak shows ONLY at the boundary row s==t. So only
+the evenly-spaced cutoff rows were effectively tested, and zeroing the leak on
+exactly those (a recomputable `linspace`) defeated the detector — plus the tail
+(newest rows, past the last real cutoff) was never tested at all. The docstring's
+claim that whole-window comparison "catches leaks that thresholding hides at the
+boundary" is true for *full-sample-statistic* leaks but FALSE for *finite-horizon*
+leaks.
+**Lesson:** Truncation-based execute-and-compare reveals a finite-horizon leak only
+at the cutoff boundary row; a sparse/recomputable cutoff grid is therefore gameable
+(the same class as the S6 grid-gaming, now shown to apply to the *foundational*
+detector), and the untested tail is a blind spot. **Continued red-teaming pays off
+even on "trusted, committed" code** — this hole sat in check_no_lookahead from the
+start and unit tests never caught it.
+**Apply:** Use EXHAUSTIVE cutoffs (every row a boundary exactly once) in any
+truncation-based causality check — never a sparse evenly-spaced grid; ensure the
+tail is covered (don't let the terminal cutoff be the trivial full panel). Add a
+determinism/statefulness pre-check (distinct diagnosis, not "leak") and fail-closed
+coercion (non-numeric / shape change / index mismatch). Use a relative tolerance so
+length-dependent float rounding on large-magnitude data isn't false-rejected. For
+very large panels a capped stride is best-effort (recomputable) — exhaustive is the
+trustworthy mode; track the cap as verification debt. A full-sample fit-once
+stateful transform still evades in-process and needs isolation (the ComputeOnce
+analogue) — record it, don't pretend the gate closes it.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

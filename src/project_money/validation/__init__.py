@@ -9,6 +9,7 @@ held-out gate is survived), no-regression (standing invariants stay green).
 from project_money.validation.invariants import (
     check_data_integrity,
     check_no_lookahead,
+    check_causal_transform,
     check_weights_valid,
 )
 from project_money.validation.metrics import compute_metrics, deflated_sharpe
@@ -29,6 +30,7 @@ from project_money.validation.cascade import Stage, StageResult, CascadeResult, 
 __all__ = [
     "check_data_integrity",
     "check_no_lookahead",
+    "check_causal_transform",
     "check_weights_valid",
     "compute_metrics",
     "deflated_sharpe",

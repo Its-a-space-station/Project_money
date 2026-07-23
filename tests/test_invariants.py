@@ -8,6 +8,7 @@ from project_money.validation import (
     check_weights_valid,
 )
 from tests.conftest import causal_momentum_signal, lookahead_signal
+from tests.specimens import grid_gamed_lookahead_signal
 
 
 class TestDataIntegrity:
@@ -98,3 +99,10 @@ class TestNoLookahead:
     def test_insufficient_history_flagged(self, prices):
         result = check_no_lookahead(causal_momentum_signal, prices.iloc[:10], min_history=30)
         assert not result.passed
+
+    def test_grid_gamed_lookahead_caught(self, prices):
+        # Core red-team Finding 1 (CRITICAL): a 1-day lookahead that zeroes itself on
+        # the old evenly-spaced cutoff grid. Exhaustive cutoffs must still catch it.
+        result = check_no_lookahead(grid_gamed_lookahead_signal, prices)
+        assert not result.passed
+        assert any("lookahead" in r for r in result.reasons)

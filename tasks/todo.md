@@ -111,8 +111,19 @@
 - [x] S3 — MarketSenseAI time-travel: confirmed the existing vintage auditor
       labels a post-cutoff model contaminated; locked with a named regression
       test. (S2 feature-level extension noted as a small future add.)
-- [ ] S7 — non-causal decomposition leakage (EMD/DWT/correlation-graph fit on test).
-- [ ] S8 — non-causal feature construction (global scaling/spline on full sample).
+- [x] S7/S8 — non-causal transform leakage via `check_causal_transform`
+      (`validation/invariants.py`): generalizes `check_no_lookahead` to any
+      preprocessing/feature transform via one shared whole-window causality core.
+      Catches full-sample scaling (S8), detrend/decomposition (S7), bidirectional
+      smoothing (S8); passes causal counterparts. **Red-team found a CRITICAL flaw
+      in the SHARED CORE (and thus the committed check_no_lookahead): whole-window
+      truncation only tests the boundary row, so finite-horizon (1-day) lookahead
+      dodged onto the evenly-spaced grid + the tail was untested.** Core rewritten:
+      **exhaustive cutoffs** (no grid to game, tail covered), determinism/
+      statefulness pre-check (distinct diagnosis), fail-closed coercion + column
+      checks, relative tolerance. 15 tests incl. grid-gamed-lookahead + tail-leak +
+      stateful + fail-closed regressions; 1 xfail (fit-once needs isolation). Lesson
+      recorded. **check_no_lookahead retroactively hardened.**
 - [ ] S26 — calibration / process-fidelity axis (ECE) in metrics + cascade.
 - [ ] S2 — model/embedder training-cutoff vs eval-window contamination (extend vintage to LLM-derived features).
 - [ ] S18 — universe/survivorship point-in-time audit (Paper 8's remaining channel); S12 min-track-record-length; S4 mandatory persistence null as a cascade stage.

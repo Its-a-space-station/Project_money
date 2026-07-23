@@ -150,6 +150,19 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-23 — **S7/S8 + a CRITICAL causality-core fix committed (4th checkpoint).**
+  Added `check_causal_transform` (S7 non-causal decomposition / S8 non-causal
+  feature construction), generalizing `check_no_lookahead` via one shared
+  whole-window core. Its red-team found a **critical flaw in that shared core — and
+  thus in the already-committed `check_no_lookahead`**: whole-window truncation only
+  tests the boundary row, so a finite-horizon (1-day) lookahead dodged onto the
+  evenly-spaced cutoff grid and the newest-data tail went untested. Core rewritten
+  to **exhaustive cutoffs** + determinism/statefulness pre-check + fail-closed
+  coercion/column checks + relative tolerance; `check_no_lookahead` retroactively
+  hardened. Suite: **247 passed, 2 xfailed** (fit-once-scaler + compute-once-cache
+  isolation limits), deterministic. Lesson recorded (finite-horizon leaks need
+  exhaustive cutoffs; continued red-teaming pays off on "trusted" code). Committed
+  to `main`, not pushed.
 - 2026-07-23 — **S11/S16 red-team hardening committed (3rd checkpoint).** The
   metric-plausibility/cost gates had real logic defects (S16 fail-OPEN on NaN;
   trusted reported scalars; accepted net==gross; S11 crashed on a non-float) — all
