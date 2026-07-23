@@ -124,7 +124,17 @@
       checks, relative tolerance. 15 tests incl. grid-gamed-lookahead + tail-leak +
       stateful + fail-closed regressions; 1 xfail (fit-once needs isolation). Lesson
       recorded. **check_no_lookahead retroactively hardened.**
-- [ ] S26 — calibration / process-fidelity axis (ECE) in metrics + cascade.
+- [x] S26 — calibration / process-fidelity axis (`validation/calibration.py`):
+      `expected_calibration_error` + `reliability_curve` + `check_calibration`
+      (review axis, necessary-not-sufficient). Closes the last §6-GAP
+      evaluation-axis item. **Red-team round 1 found the fixed 0.1 bar flags a
+      PERFECT forecaster ~89% of the time at N=50 (CRITICAL FP) and count-weighted
+      ECE forgives a confident-tail (CRITICAL FN) → redesigned:** seeded
+      parametric-bootstrap null band (self-calibrating; the documented CI debt made
+      load-bearing), MCE-with-count-floor, a finer-binning pass, and a coverage
+      floor. 15 tests incl. all 4 finding regressions. Lesson recorded. **Round-2
+      re-verification IN PROGRESS.** (Compose with prequential_log_loss for
+      proper-scoring-rule blow-ups — noted.)
 - [ ] S2 — model/embedder training-cutoff vs eval-window contamination (extend vintage to LLM-derived features).
 - [ ] S18 — universe/survivorship point-in-time audit (Paper 8's remaining channel); S12 min-track-record-length; S4 mandatory persistence null as a cascade stage.
 - [ ] S1 — `frozen_at` + strictly-post-timestamp forward tracking (research-only).

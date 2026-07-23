@@ -486,6 +486,69 @@ class FitOnceScaler:
         return (data - self.mu) / self.sigma
 
 
+# --- S26: calibration axis (ECE) ----------------------------------------------
+
+def well_calibrated_forecast(n_obs: int = 5000, *, seed: int = 101) -> tuple[np.ndarray, np.ndarray]:
+    """S26 (must PASS): predicted probabilities whose realized frequencies match —
+    outcomes drawn as Bernoulli(p). Low ECE by construction."""
+    rng = np.random.default_rng(seed)
+    p = rng.uniform(0.05, 0.95, n_obs)
+    y = (rng.random(n_obs) < p).astype(float)
+    return p, y
+
+
+def overconfident_forecast(n_obs: int = 5000, *, seed: int = 103) -> tuple[np.ndarray, np.ndarray]:
+    """S26 (must be FLAGGED): confident ~0.95 predictions but coin-flip outcomes —
+    a large calibration gap (ECE ~ 0.45)."""
+    rng = np.random.default_rng(seed)
+    p = np.full(n_obs, 0.95)
+    y = (rng.random(n_obs) < 0.5).astype(float)
+    return p, y
+
+
+def confident_tail_miscalibration(
+    n_obs: int = 5000, *, tail_frac: float = 0.09, seed: int = 107
+) -> tuple[np.ndarray, np.ndarray]:
+    """S26 red-team Finding 2 (must be FLAGGED): a bulk of calibrated 0.5 calls plus
+    a sparse tail predicted 0.99 whose outcome is always 0 — max-confidence, 100%
+    wrong, exactly what a confidence-sized strategy levers up. Count-weighted ECE
+    forgives it; MCE-with-count-floor must catch it."""
+    rng = np.random.default_rng(seed)
+    n_tail = int(n_obs * tail_frac)
+    n_bulk = n_obs - n_tail
+    p = np.concatenate([np.full(n_bulk, 0.5), np.full(n_tail, 0.99)])
+    y = np.concatenate([(rng.random(n_bulk) < 0.5).astype(float), np.zeros(n_tail)])
+    return p, y
+
+
+def within_bin_anticalibration(n_obs: int = 5000, *, seed: int = 109) -> tuple[np.ndarray, np.ndarray]:
+    """S26 red-team Finding 3 (must be FLAGGED): all mass in one wide uniform bin
+    (0.4,0.5] at two sub-values whose reality is anti-correlated with confidence —
+    mean_pred≈mean_outcome hides it at 10 bins; the finer-binning pass surfaces it."""
+    rng = np.random.default_rng(seed)
+    half = n_obs // 2
+    p = np.concatenate([np.full(half, 0.401), np.full(n_obs - half, 0.499)])
+    y = np.concatenate(
+        [(rng.random(half) < 0.90).astype(float), np.zeros(n_obs - half)]
+    )
+    return p, y
+
+
+def high_abstention_forecast(
+    n_obs: int = 5000, *, answered: int = 500, seed: int = 111
+) -> tuple[np.ndarray, np.ndarray]:
+    """S26 red-team Finding 4 (must be FLAGGED): NaN (abstain) on most cases,
+    calibrated on the few answered — the coverage floor must catch it."""
+    rng = np.random.default_rng(seed)
+    p = np.full(n_obs, np.nan)
+    ans_idx = rng.choice(n_obs, answered, replace=False)
+    pa = rng.uniform(0.05, 0.95, answered)
+    p[ans_idx] = pa
+    y = np.zeros(n_obs)
+    y[ans_idx] = (rng.random(answered) < pa).astype(float)
+    return p, y
+
+
 # --- S3: model-vintage contamination (MarketSenseAI time-travel) ---------------
 
 def marketsenseai_vintage_records() -> list[VintageRecord]:

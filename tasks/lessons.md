@@ -415,6 +415,33 @@ trustworthy mode; track the cap as verification debt. A full-sample fit-once
 stateful transform still evades in-process and needs isolation (the ComputeOnce
 analogue) — record it, don't pretend the gate closes it.
 
+### 2026-07-23 — A fixed threshold on a finite-sample-biased metric is wrong at both ends; use a bootstrap null band, and pair count-weighted averages with a max
+
+**Context:** The S26 calibration gate shipped with a fixed `max_ece=0.1` bar and
+`min_samples=50`. Red-team: uniform-bin ECE has a positive finite-sample bias
+(~sqrt(bins/2πN)), so at N=50 a *perfectly calibrated* forecaster's expected ECE
+(~0.14) sits ABOVE the bar — it was flagged ~89% of the time. The bar and the
+sample floor were mutually inconsistent (the floor admitted sizes where the
+metric's own noise exceeds the pass bar). Separately, count-weighted ECE forgave a
+sparse-but-maximally-confident-wrong tail (~10% of the book, 0.99→outcome 0, still
+passed) — the tail is exactly where a confidence-sized strategy levers up.
+**Lesson:** (1) A fixed threshold on a metric with sample-size-dependent bias/noise
+is wrong at both ends — too tight at small N (false-positives good models), too
+loose at large N. Compare the observed statistic to its **distribution under the
+null** (here a parametric bootstrap y'~Bernoulli(p), seeded → deterministic) and
+flag beyond the band; the band self-adjusts to N and to the binning. This is the
+"resampled confidence band" the docstring had already listed as verification debt
+— red-team elevated it from nice-to-have to load-bearing. (2) A count-weighted
+average structurally forgives a concentrated failure; pair it with a **max** over
+adequately-populated cells (MCE with a count floor) so tail-risk isn't drowned.
+(3) Binned metrics are nuisance-carriers: report across ≥2 bin resolutions and flag
+divergence (within-bin anti-calibration invisible at 10 bins showed at 20).
+**Apply:** For any gate built on a binned/averaged/finite-sample statistic, prefer
+a bootstrap-null band over a fixed constant; add a max-over-cells companion to any
+count-weighted mean; sweep the nuisance parameter (bin count) rather than fixing
+it. Guard coverage/abstention before scoring (a model judged only on the calls it
+chooses to answer looks better than it is).
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

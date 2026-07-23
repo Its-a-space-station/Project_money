@@ -150,6 +150,17 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-23 — **S26 calibration axis committed (5th checkpoint) — §6-GAP verifier
+  set complete.** Added `validation/calibration.py` (ECE + reliability curve +
+  `check_calibration`), the last §6-GAP evaluation axis. Its red-team found the
+  fixed ECE bar flags a *perfect* forecaster ~89% of the time at N=50 (critical FP)
+  and count-weighted ECE forgives a confident-tail (critical FN) → redesigned to a
+  seeded parametric-bootstrap null band + MCE-with-count-floor + finer-binning pass
+  + coverage floor. Suite: **262 passed, 2 xfailed**, deterministic. Round-2
+  re-verification running at commit time. All §6-GAP leakage/axis detectors
+  (S6, S7, S8, S26) plus S9/S5/S10/S11/S16/S3 are now built and red-teamed. Lesson
+  recorded (bootstrap null band for finite-sample-biased gate metrics). Committed
+  to `main`, not pushed.
 - 2026-07-23 — **S7/S8 + a CRITICAL causality-core fix committed (4th checkpoint).**
   Added `check_causal_transform` (S7 non-causal decomposition / S8 non-causal
   feature construction), generalizing `check_no_lookahead` via one shared
