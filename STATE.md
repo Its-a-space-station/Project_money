@@ -150,6 +150,15 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-23 — **S11/S16 red-team hardening committed (3rd checkpoint).** The
+  metric-plausibility/cost gates had real logic defects (S16 fail-OPEN on NaN;
+  trusted reported scalars; accepted net==gross; S11 crashed on a non-float) — all
+  fixed: math.isfinite fail-closed, artifact recompute (recompute-don't-trust),
+  net≥gross rejection, dropped the FP-prone rate floor. 13 gate tests. Two durable
+  lessons recorded (NaN fail-open + sibling fail-direction; binary pass/fail
+  conflates reject vs needs_human_review). **All six detectors now red-teamed to
+  convergence.** Suite: **234 passed, 1 xfailed**, deterministic. Committed to
+  `main`, not pushed.
 - 2026-07-23 — **Calibration-first milestone: ALL FIVE §9 known-bad specimens are
   now rejected by the harness.** Added the Paper 8 gates (S11 impossible-accuracy
   alarm + S16 cost gate, `validation/metric_plausibility.py`; its scaler-leak is

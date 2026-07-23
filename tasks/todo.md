@@ -83,9 +83,14 @@
       r3 fixes (returns bar raised to 0.5 & framed as review; integratedness
       hysteresis). S10 = distributed-growth + fail-closed on non-finite (robust).
       19 tests. Lesson recorded (gate-against-the-null).
-- [~] S11/S16 (Paper 8) — `validation/metric_plausibility.py`: impossible-accuracy
+- [x] S11/S16 (Paper 8) — `validation/metric_plausibility.py`: impossible-accuracy
       alarm (S11) + cost gate (S16). Closes the Paper 8 compound specimen with the
-      scaler-leak (check_no_lookahead). 8 tests green. **Red-team pending.**
+      scaler-leak (check_no_lookahead). **Red-team round 1 found real logic defects
+      (S16 NaN fail-OPEN; trusted reported scalars; net==gross accepted; S11 crash
+      on non-float) → all fixed** (math.isfinite fail-closed; artifact recompute;
+      net≥gross rejection; drop the FP-prone rate floor). 13 tests green. Lessons
+      recorded (NaN fail-open + sibling fail-direction; recompute-don't-trust;
+      one-sided alarms must be composed).
 - [ ] **Verification debt (tracked, not silent):** (a) `max_test_bars` fast path
       is a best-effort screen — subsample data-derived but recomputable; exhaustive
       (default) is trustworthy. (b) Fully adversarial *stateful* signal_fns need
@@ -95,9 +100,14 @@
       (not capital-at-risk; backstopped by the honest-null requirement +
       forward-tracking). (d) S5 delegates contemporaneous leaks to the one-bar
       execution lag + S6 + walk-forward — **TODO: dedicated red-team confirming
-      those cover autocorrelated/level targets** (skeptic-recommended). (e) S5
-      returns bar is a review flag (needs_human_review), not auto-reject — wire
-      accordingly when the cascade integrates these checks.
+      those cover autocorrelated/level targets** (skeptic-recommended). (e)
+      **Review-disposition checks** (S11, S5 returns bar, S10, S16 rate-advisory)
+      are `needs_human_review`, not auto-reject — but `CheckResult` is binary and
+      `run_cascade` maps any fail→reject. When wiring these into the cascade, give
+      them a machine-readable review disposition (do NOT register them as rejecting
+      stages). (f) S11/S16 are one-sided alarms — compose with edge-existence gates
+      (deflated Sharpe, no-lookahead), never trust alone. (g) S18 universe/
+      survivorship point-in-time audit is Paper 8's remaining (un-built) channel.
 - [x] S3 — MarketSenseAI time-travel: confirmed the existing vintage auditor
       labels a post-cutoff model contaminated; locked with a named regression
       test. (S2 feature-level extension noted as a small future add.)

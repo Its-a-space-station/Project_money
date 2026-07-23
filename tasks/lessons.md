@@ -342,6 +342,49 @@ fixed metric." Infer, never trust, the flags that decide which checks run. Pair
 each new detector's specimen (must-fail) with a legitimate near-neighbor
 (must-pass) so false positives surface in the bracket test.
 
+### 2026-07-23 — NaN fails a naive numeric gate OPEN; sibling gates must fail the same way; recompute, don't trust reports
+
+**Context:** Red-team of the S11/S16 plausibility gates. S16's floor check
+`cost_bps < 5.0` let `float('nan')` through (`nan < 5.0` is False), and its vanish
+check (`gross > 0 and net <= 0`) let an all-NaN payload pass with zero reasons —
+so a broken/undefined cost model read as "cost-inclusive, edge survives." Its
+sibling S11 correctly fail-closed on NaN, so the two gates failed in *opposite*
+directions. Separately, S16 compared self-reported scalars (`cost_bps`,
+`sharpe_net`) and so certified fabricated numbers, and `net == gross` (a cost
+provably not applied) as cost-inclusive. And both gates are one-sided *upper*
+alarms — a zero-skill coin-flip (S11) and a zero-edge no-op (S16) pass them.
+**Lesson:** (1) Every numeric comparison in a gate is a NaN fail-open unless
+guarded — `x < bar` and `x > 0` are both False for NaN. Guard with
+`math.isfinite` and fail closed. (2) Sibling gates must fail in the same (closed)
+direction; a fail-direction inconsistency between two checks is itself a defect.
+(3) A gate that reads a reported scalar certifies whatever the candidate reports —
+recompute the metric from the primitive artifacts (weights + returns), matching
+the metrics-doctrine ("recomputed from artifacts, never accepted from a report").
+(4) A one-sided alarm ("too high"/"too low") is not a standalone screen: "passed"
+≠ "has an edge and is clean." Compose alarms with the edge-existence gates
+(deflated Sharpe / multiplicity, no-lookahead) before promotion.
+**Apply:** Add an explicit non-finite → fail-closed guard to every gate; unit-test
+the NaN/None/inf case for each. Prefer artifact-recompute over reported scalars.
+Bracket-test both legs (oracle passes / garbage fails) AND ask "what no-op passes
+this?" — if a trivial null passes, the gate is one-sided and must be composed, not
+trusted alone.
+
+### 2026-07-23 — Binary pass/fail conflates "reject" with "route to human review"
+
+**Context:** S11 (and S5's returns bar, S10) are documented as *review* flags
+("mandatory audit"), but `CheckResult` is binary and `run_cascade` maps any
+`passed=False` to `label='reject'` — so wiring them as cascade stages would
+hard-reject legitimate strategies (a 62%-accuracy trending base rate, a strong
+returns edge) instead of routing them to `needs_human_review`.
+**Lesson:** Some checks are hard rejects; others should route to human review. A
+binary pass/fail cannot express that tri-state, and the difference is
+label-load-bearing (`reject` vs `needs_human_review` — both canonical). The
+disposition is a property the check must carry, not something the cascade can infer.
+**Apply:** When integrating these checks into the cascade, give review-disposition
+checks (S11, S5 returns bar, S10, S16 rate-advisory) a machine-readable
+"needs_human_review" disposition rather than registering them as rejecting stages.
+Tracked as verification debt in `tasks/todo.md` until the cascade wiring exists.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.
