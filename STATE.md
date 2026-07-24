@@ -159,8 +159,25 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-23 — **Wave 2 · V4 (effect-size gate) DONE, uncommitted, pending commit
+  approval.** Second Wave-2 item (V1 committed as `165a58a`). Built
+  `validation/effect_size.py` (`check_effect_size`) — routes a *statistically
+  significant but economically negligible / materially adverse* result to
+  `needs_human_review`; a significance claim with no usable effect size →
+  `validation_pending`; a broken `min_effect` knob or non-bool `significant` →
+  `reject`; not-significant or significant-and-material → pass. One-sided review
+  alarm (necessary-not-sufficient; compose with the edge-existence gates); the
+  lightweight companion to the batch-3 Bayesian ROPE gate. NOT wired as a live
+  cascade stage. research-skeptic: **round-1 core routing clean** (no fail-open, no
+  disposition-softening), 3 boundary issues fixed (OverflowError crash, stringly-typed
+  knob, candidate text echoed untruncated into judge-facing `reasons` — a
+  prompt-injection surface); **round-2 re-verify GO**, 2 LOW residuals also closed.
+  Suite **427 passed, 2 xfailed, deterministic** (400 baseline + 27 new). Pure
+  research-tooling — no providers/execution/secrets. Lesson recorded (reason strings
+  are an output/injection surface; float() footguns). **Uncommitted; awaiting commit
+  go-ahead.** Next: S4 (persistence null as a rejecting rung-0 cascade stage).
 - 2026-07-23 — **Wave 2 started; V1 (window-completeness / anti-drop-last) DONE,
-  uncommitted, pending commit approval.** User authorized "continue with Wave 2 on
+  committed `165a58a`, pushed.** User authorized "continue with Wave 2 on
   its own." First item built: `validation/window_completeness.py`
   (`check_window_completeness` + `expected_window_count`) — reconciles scored
   evaluation windows against the declared sliding-window geometry / an explicit
@@ -172,8 +189,8 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
   invariance" labeling) — all fixed; **round-2 re-verify: GO** (fresh repros, no
   new hole). Suite **400 passed, 2 xfailed, deterministic** (371 baseline + 29
   new). Pure research-tooling — no providers/execution/secrets. Lesson recorded
-  (str-collision class recurred). **Uncommitted; awaiting commit go-ahead.** Next:
-  V4 (effect-size gate).
+  (str-collision class recurred). **Committed `165a58a`, pushed, in sync with
+  origin.** Next was V4 (now done, above).
 - 2026-07-23 — **Wave 1 long-tail verifier COMPLETE, committed, and PUSHED.** After
   the dedup inventory (workflow `wf_eeae6712-d2a`, 23 items → ≈17 build efforts), the
   user chose "foundational item only, then re-plan," then approved **Wave 1 (shared
@@ -378,15 +395,16 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 - **Wave 2 (long-tail verifier) is underway** — user chose it 2026-07-23 ("continue with
   Wave 2 on its own"). Order: **V1 → V4 → S4 → W4 → S12 → V8 → V3+S2 → S1**, one item at a
   time, maker≠checker + skeptic red-team, one commit each.
-  - **V1 (window-completeness / anti-drop-last): DONE, uncommitted** — awaiting commit
-    go-ahead (suite 400 passed / 2 xfailed).
-  - **Next: V4** — effect-size gate (economic magnitude beside every significance/DSR
-    verdict; "significant but negligible-d" labeled accordingly). Then S4 (persistence
-    null as a public rejecting rung-0 cascade stage), W4 (search-space cardinality → DSR
-    true trial count), S12 (MinTRL + Sortino), V8 (spectral-entropy forecastability),
-    V3+S2 (pretrained/LLM-feature vintage extension), **S1 `frozen_at` forward tracking**
-    (the load-bearing MVP foundation). Then Wave 3 (W1/W2/W3/W5/W6, S18 procedure-half)
-    and Wave 4 (DEBT-statefulness-isolation, DEBT-S5 red-team).
+  - **V1 (window-completeness / anti-drop-last): DONE, committed `165a58a`, pushed.**
+  - **V4 (effect-size gate): DONE, uncommitted** — awaiting commit go-ahead (suite 427
+    passed / 2 xfailed).
+  - **Next: S4** — promote the persistence null to a public *rejecting* rung-0 cascade
+    stage (auto-reject a returns strategy that can't beat persistence). Then W4
+    (search-space cardinality → DSR true trial count), S12 (MinTRL + Sortino), V8
+    (spectral-entropy forecastability), V3+S2 (pretrained/LLM-feature vintage extension),
+    **S1 `frozen_at` forward tracking** (the load-bearing MVP foundation). Then Wave 3
+    (W1/W2/W3/W5/W6, S18 procedure-half) and Wave 4 (DEBT-statefulness-isolation,
+    DEBT-S5 red-team).
   - Edge discovery (Option B: Tiingo/FRED → cached MVP screen) was NOT chosen; it stays
     available and gated for later (see [HANDOFF.md](HANDOFF.md) §8).
 - **Still gated (unchanged):** any Robinhood data or execution path, fund movement, live

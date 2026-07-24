@@ -35,6 +35,7 @@ from project_money.validation.window_completeness import (
     check_window_completeness,
     expected_window_count,
 )
+from project_money.validation.effect_size import check_effect_size
 from project_money.validation.forecast_diagnostics import (
     r_squared,
     check_returns_not_levels,
@@ -76,6 +77,7 @@ __all__ = [
     "check_temporal_holdout",
     "check_window_completeness",
     "expected_window_count",
+    "check_effect_size",
     "r_squared",
     "check_returns_not_levels",
     "check_horizon_monotonicity",

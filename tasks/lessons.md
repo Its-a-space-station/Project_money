@@ -530,6 +530,38 @@ can neither be silently ignored nor reach an unguarded `// stride`. And —
 reconfirmed again — a fresh adversarial red-team on green, "trusted" code found both
 holes the passing suite did not; the round-2 re-verify converged (GO).
 
+### 2026-07-23 — Reason strings are an OUTPUT surface: bound candidate-authored values echoed into them; float() has two footguns beyond NaN
+
+**Context:** V4 (effect-size gate) red-team. Two classes surfaced. (1) The gate
+interpolated the candidate-authored `effect_size` / `min_effect` verbatim
+(`{x!r}`, untruncated) into its `reasons` — which flow to the hypothesis ledger
+and, per the corpus, potentially to an LLM judge. A non-numeric `effect_size`
+(→ a correct, fail-closed `validation_pending`) still planted 255k chars of
+"IGNORE ALL PRIOR INSTRUCTIONS…" verbatim into `reasons[0]`: a prompt-injection
+channel into a downstream judge, even though V4's own disposition stayed correct.
+(2) `float(x)`, used to validate a numeric magnitude/knob, has two footguns beyond
+the known NaN/inf fail-open — it *raises* `OverflowError` on a huge int
+(`float(10**400)`; a Stage-0 check must never raise), and it silently *parses* a
+stringly-typed value (`float("0.05")`), accepting a load-bearing knob that arrived
+as text (and numpy `U`/`S`-dtype arrays dodge a plain `isinstance(str)` guard).
+**Lesson:** A verifier's `reasons` are not just for humans — they are an output
+consumed by other automated systems (ledger, LLM judge), so any *candidate-authored*
+value echoed into a reason is an injection surface and must be **bounded** (a
+truncated repr), the untrusted-field analogue of the `effect_name` trusted-constant
+defense. And numeric input-validation via `float()` must guard three ways, not one:
+non-finite (NaN/inf), `OverflowError` (huge int), and reject `str`/`bytes` (incl.
+numpy string dtypes) so a stringly-typed load-bearing knob fails closed instead of
+being silently parsed.
+**Apply:** In every gate, (a) route any candidate-authored value interpolated into a
+reason through a bounded `repr(x)[:N]` helper that also cannot crash on a hostile
+`__repr__`; keep trusted-constant labels separate. (b) A numeric-coercion helper for
+a gate's magnitudes/knobs catches `(TypeError, ValueError, OverflowError)`, rejects
+`str`/`bytes`/`bytearray` and numpy `U`/`S` dtypes before coercion, and returns
+fail-closed None on non-finite. (c) Reconfirmed: the round-1 red-team on green code
+found all of it at the input/output boundary (core routing was clean), and the
+round-2 re-verify caught two LOW residuals in the fixes themselves — re-verify fixes,
+never assume they are complete.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

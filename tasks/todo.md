@@ -393,6 +393,46 @@ All failure paths carry the `reject` disposition. Pure research-tooling — no
 providers/execution/secrets. Remaining Wave-2 items (V4, S4, W4, S12, V8, V3+S2, S1)
 queued, one commit each.
 
+### V4 — effect-size gate / economic magnitude beside significance (DONE, uncommitted)
+
+- [x] `validation/effect_size.py`: `check_effect_size` — given a declared effect
+      size (economic magnitude, oriented larger=better), a pre-registered
+      materiality threshold `min_effect`, and the upstream significance verdict, it
+      routes a *significant but economically negligible* (or materially adverse /
+      negative) result to `needs_human_review`. A significance claim with no usable
+      effect size → `validation_pending` (the V4 mandate); a broken knob
+      (`min_effect` non-finite/≤0) or malformed `significant` (non-bool) → `reject`;
+      not-significant or significant-and-material → pass. One-sided review alarm,
+      necessary-not-sufficient (compose with the edge-existence gates). Lightweight
+      companion to the batch-3 Bayesian ROPE gate. NOT wired as a live cascade stage.
+      Exported from the package.
+- [x] Tests: 27 in `tests/test_effect_size.py` (bracket: material passes, negligible/
+      adverse/zero → review, not-significant passes, at-threshold passes; disposition
+      placement for every path; type acceptance numpy bool/float; + round-1 & round-2
+      red-team regressions). Suite **427 passed, 2 xfailed, deterministic** (400
+      baseline preserved + 27 new).
+- [x] research-skeptic red-team — round 1: **core routing clean** (no fail-open, no
+      disposition-softening, deterministic, scope honest); 3 real issues at the
+      input/output boundary — `OverflowError` crash on a huge int (MED), stringly-typed
+      knob silently parsed (MED), and candidate-authored `effect_size` echoed
+      untruncated into judge-facing `reasons` (MED, prompt-injection surface). Fixed:
+      catch OverflowError + reject str/bytes(+numpy U/S dtypes) in `_finite_float`,
+      bounded `_short()` repr on the three untrusted interpolations. **Round-2
+      re-verify: GO** — all three closed, no new hole; 2 LOW residuals it flagged
+      (numpy string array; hostile `__repr__`) also closed (purely fail-closed).
+      Lesson recorded (reason strings are an output/injection surface; float() footguns).
+
+### Review — Wave 2 · V4 (2026-07-23)
+
+**Done & verified (uncommitted).** V4 effect-size gate, built maker≠checker +
+research-skeptic to convergence (rounds 1→2 GO). The load-bearing routing was clean
+from the start (no fail-open; correct three-disposition placement — reject / validation_pending
+/ needs_human_review with hardest-wins ordering); every red-team finding was at the
+input-coercion / reason-string boundary and is fixed + regression-tested. The recurring
+meta-lesson held again: the round-1 pass found real issues on green code, and the round-2
+re-verify found residuals in the fixes. Pure research-tooling — no providers/execution/secrets.
+Next: S4 (persistence null as a public rejecting rung-0 cascade stage).
+
 ## Bootstrap (done)
 
 - [x] Convert original brief `.rtf` → `CLAUDE.md`.
