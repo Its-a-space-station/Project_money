@@ -8,28 +8,33 @@ the cascade result names the failing stage and its reasons (verification-debt
 doctrine).
 
 Stages are plain callables returning a ``(passed, metrics, reasons)`` triple, or
-a ``(passed, metrics, reasons, disposition)`` quadruple when a failure is a
-*review* flag rather than a hard reject, so the cascade is generic over what is
-being evaluated. Thresholds live in the stage definitions — config, not vibes.
+a ``(passed, metrics, reasons, disposition)`` quadruple when a failure is softer
+than a hard reject, so the cascade is generic over what is being evaluated.
+Thresholds live in the stage definitions — config, not vibes.
 
-Failure disposition & label precedence. A failing stage's disposition is either
-``reject`` (hard disqualification, the default) or ``needs_human_review`` (route
-to a human, not an auto-reject — e.g. an implausibly high directional accuracy or
-a strong-but-plausible returns edge). So a review flag can never *mask* a harder
-verdict, the terminal label is decided as:
+Failure disposition & label precedence. A failing stage's disposition is one of
+(most→least severe):
+
+  * ``reject`` (default) — hard disqualification.
+  * ``validation_pending`` — the check ran but could not certify (e.g. an unfair
+    or un-instrumented candidate-vs-null comparison); unverifiable ≠ rejected.
+  * ``needs_human_review`` — a substantive concern a human must adjudicate (e.g.
+    an implausibly high accuracy, a strong-but-plausible returns edge).
+
+So a softer failure can never *mask* a harder one, the terminal label is:
 
   * the first stage that hard-``reject``s → ``reject`` (short-circuits — cost governor);
-  * the first stage that raises → ``validation_pending`` (unverifiable ≠ rejected;
-    short-circuits);
+  * the first stage that raises → ``validation_pending`` (unverifiable; short-circuits);
+  * otherwise, if any stage flagged ``validation_pending`` → ``validation_pending``;
   * otherwise, if any stage flagged ``needs_human_review`` → ``needs_human_review``;
   * otherwise (all passed) → ``trigger_ready_research_candidate``.
 
-A ``needs_human_review`` deliberately does **not** short-circuit: later stages
-still run, so a subsequent hard reject or an unverifiable stage still wins (a
-review flag must never let a rejectable candidate slip past — correct rejection
-is the point). An unrecognized disposition from a stage is fail-closed to
-``reject`` (hardened, never softened) with a diagnostic reason. Every label is a
-canonical research label (docs/label_policy.md) — never an action word.
+Only ``reject`` and an exception short-circuit. A ``validation_pending`` or
+``needs_human_review`` disposition does NOT — later stages still run, so a
+subsequent hard reject always wins (correct rejection is the point). An
+unrecognized disposition is fail-closed to ``reject`` (hardened, never softened).
+Every label is a canonical research label (docs/label_policy.md) — never an
+action word.
 """
 
 from __future__ import annotations
@@ -42,9 +47,15 @@ from project_money.validation.invariants import (
     FAILURE_DISPOSITIONS,
     NEEDS_HUMAN_REVIEW,
     REJECT,
+    VALIDATION_PENDING,
 )
 
 StageFn = Callable[[Any], tuple]
+
+# Severity of a failing stage's disposition (higher = more blocking). Used both
+# for the terminal-label precedence and for naming the deciding stage. An unknown
+# disposition is treated as the hardest (reject) — fail closed.
+_SEVERITY = {REJECT: 3, VALIDATION_PENDING: 2, NEEDS_HUMAN_REVIEW: 1}
 
 
 @dataclass(frozen=True)
@@ -58,11 +69,11 @@ class Stage:
     @classmethod
     def from_check(cls, name: str, check: Callable[[Any], CheckResult]) -> "Stage":
         """Wrap a ``CheckResult``-returning check as a cascade stage, propagating its
-        ``disposition`` so a review-flagged failure yields ``needs_human_review``
-        rather than a hard ``reject``. ``check`` receives the candidate; close over
-        it to adapt a check whose signature differs (e.g. one taking ``y_true,
-        y_pred``). Registering a check here does not change its own logic — only
-        how the cascade labels a failure."""
+        ``disposition`` so a soft failure yields the matching label (not a hard
+        ``reject``). ``check`` receives the candidate; close over it to adapt a
+        check whose signature differs (e.g. one taking ``y_true, y_pred``).
+        Registering a check here does not change its own logic — only how the
+        cascade labels a failure."""
 
         def fn(candidate: Any) -> tuple:
             r = check(candidate)
@@ -86,10 +97,9 @@ class CascadeResult:
 
     ``label`` is one of the canonical research labels (docs/label_policy.md):
     ``trigger_ready_research_candidate`` only when every stage passed;
-    ``needs_human_review`` when the worst failure was a review flag; ``reject``
-    when a stage hard-rejected; ``validation_pending`` when the cascade was cut
-    short by an error. Never an action word. See the module header for the full
-    precedence.
+    ``needs_human_review`` / ``validation_pending`` when the worst failure was a
+    review flag / an unverifiable check; ``reject`` when a stage hard-rejected.
+    Never an action word. See the module header for the full precedence.
     """
 
     stages: list[StageResult] = field(default_factory=list)
@@ -101,24 +111,29 @@ class CascadeResult:
 
     @property
     def failed_stage(self) -> str | None:
-        """The stage that determined a non-promote outcome: the hard-reject /
-        unverifiable stage when one exists, else the first review flag. Because a
-        review flag does not short-circuit, under review-then-reject this names the
-        reject cause — not the earlier review — so the ledger records *why* a
-        candidate was rejected."""
+        """The stage that determined a non-promote outcome: the most-severe failing
+        stage (reject > validation_pending > needs_human_review), first occurrence.
+        Because a soft failure does not short-circuit, under e.g. review-then-reject
+        this names the reject cause — not the earlier review — so the ledger records
+        *why* a candidate did not promote."""
         non_passing = [s for s in self.stages if not s.passed]
         if not non_passing:
             return None
-        for s in non_passing:
-            if s.disposition == REJECT:
-                return s.name
-        return non_passing[0].name
+        worst = max(_SEVERITY.get(s.disposition, 3) for s in non_passing)
+        return next(s.name for s in non_passing if _SEVERITY.get(s.disposition, 3) == worst)
+
+    def _stages_flagged(self, disposition: str) -> list[str]:
+        return [s.name for s in self.stages if not s.passed and s.disposition == disposition]
 
     @property
     def review_stages(self) -> list[str]:
-        """Names of the non-passing stages that flagged for human review (empty on
-        a hard reject or an all-pass run)."""
-        return [s.name for s in self.stages if not s.passed and s.disposition == NEEDS_HUMAN_REVIEW]
+        """Non-passing stages that flagged for human review."""
+        return self._stages_flagged(NEEDS_HUMAN_REVIEW)
+
+    @property
+    def unverifiable_stages(self) -> list[str]:
+        """Non-passing stages that could not certify (validation_pending)."""
+        return self._stages_flagged(VALIDATION_PENDING)
 
     def merged_metrics(self) -> dict[str, float]:
         """Stage-prefixed union of every stage's metrics dict."""
@@ -161,10 +176,10 @@ def run_cascade(candidate: Any, stages: list[Stage]) -> CascadeResult:
     precedence documented in the module header.
 
     A hard ``reject`` (or an exception → ``validation_pending``) short-circuits; a
-    ``needs_human_review`` is recorded but does not, so a later hard reject can
-    still win. Exceptions inside a stage are captured as that stage's failure
-    reasons (unverifiable ≠ rejected — the distinction feeds the verification-debt
-    ledger).
+    ``validation_pending`` / ``needs_human_review`` disposition is recorded but does
+    not, so a later hard reject can still win. Exceptions inside a stage are
+    captured as that stage's failure reasons (unverifiable ≠ rejected — the
+    distinction feeds the verification-debt ledger).
     """
     result = CascadeResult()
     stages = list(stages)  # materialize any iterable so the empty-guard is total, not list-only
@@ -172,21 +187,31 @@ def run_cascade(candidate: Any, stages: list[Stage]) -> CascadeResult:
         result.label = "validation_pending"  # nothing was verified — not promotable, not rejected
         return result
     review_pending = False
+    unverifiable = False
     for stage in stages:
         try:
             passed, metrics, reasons, disposition = _normalize_output(stage.fn(candidate))
         except Exception as exc:  # captured, never swallowed
             result.stages.append(
-                StageResult(stage.name, False, {}, [f"stage raised {type(exc).__name__}: {exc}"], REJECT)
+                StageResult(
+                    stage.name, False, {}, [f"stage raised {type(exc).__name__}: {exc}"], VALIDATION_PENDING
+                )
             )
             result.label = "validation_pending"
             return result
         result.stages.append(StageResult(stage.name, passed, metrics, reasons, disposition))
         if not passed:
-            if disposition == NEEDS_HUMAN_REVIEW:
-                review_pending = True  # do NOT short-circuit: a later reject must be able to outrank
-                continue
-            result.label = "reject"
-            return result
-    result.label = "needs_human_review" if review_pending else "trigger_ready_research_candidate"
+            if disposition == REJECT:
+                result.label = "reject"
+                return result
+            if disposition == VALIDATION_PENDING:
+                unverifiable = True  # do NOT short-circuit: a later reject must be able to outrank
+            else:  # NEEDS_HUMAN_REVIEW
+                review_pending = True
+    if unverifiable:
+        result.label = "validation_pending"
+    elif review_pending:
+        result.label = "needs_human_review"
+    else:
+        result.label = "trigger_ready_research_candidate"
     return result

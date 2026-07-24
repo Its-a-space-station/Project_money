@@ -20,16 +20,22 @@ import numpy as np
 import pandas as pd
 
 # --- failure dispositions (shared by CheckResult and the cascade) -------------
-# A *failure*'s disposition, never an action word. ``reject`` hard-disqualifies a
-# candidate; ``needs_human_review`` routes it to human adjudication instead of an
-# auto-reject. Both are canonical research labels (docs/label_policy.md). The
-# cascade turns a stage's disposition into the matching ``CascadeResult`` label
-# (see cascade.run_cascade). ``reject`` is the safe default / fail-closed
-# direction: an unknown disposition is always hardened to ``reject``, never
-# softened to review.
+# A *failure*'s disposition, never an action word — each equals the canonical
+# research label (docs/label_policy.md) it induces on the cascade:
+#   ``reject``            — hard-disqualifies the candidate.
+#   ``validation_pending``— the check ran but could NOT certify (e.g. an unfair /
+#                           un-instrumented comparison); unverifiable ≠ rejected.
+#   ``needs_human_review``— a substantive concern a human must adjudicate.
+# Severity (most→least, used for precedence and for naming the deciding stage):
+#   reject > validation_pending > needs_human_review.  An unverifiable result
+# outranks a review flag because you cannot route something for final human
+# judgment while verification itself is incomplete. ``reject`` is the safe default
+# / fail-closed direction: an unknown disposition is always hardened to ``reject``,
+# never softened.
 REJECT = "reject"
+VALIDATION_PENDING = "validation_pending"
 NEEDS_HUMAN_REVIEW = "needs_human_review"
-FAILURE_DISPOSITIONS = frozenset({REJECT, NEEDS_HUMAN_REVIEW})
+FAILURE_DISPOSITIONS = frozenset({REJECT, VALIDATION_PENDING, NEEDS_HUMAN_REVIEW})
 
 
 @dataclass(frozen=True)
@@ -43,10 +49,10 @@ class CheckResult:
     ``disposition`` classifies a *failure* (ignored when ``passed``): ``reject``
     (default — a hard disqualification) or ``needs_human_review`` (a review flag a
     human must adjudicate, not an auto-reject). It lets a cascade emit the
-    canonical ``needs_human_review`` label instead of hard-rejecting a legitimate
-    strategy. A check that mixes fail-closed input errors (reject) with a
-    substantive review flag reports the *most severe* disposition it tripped
-    (reject outranks needs_human_review)."""
+    canonical ``needs_human_review`` (or ``validation_pending``) label instead of
+    hard-rejecting a legitimate strategy. A check that trips more than one kind of
+    failure reports the *most severe* disposition (reject > validation_pending >
+    needs_human_review)."""
 
     name: str
     passed: bool

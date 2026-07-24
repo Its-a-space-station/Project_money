@@ -259,6 +259,53 @@ statefulness-isolation + S5-contemporaneous red-team) per the `wf_eeae6712-d2a` 
 **next: Wave 1 shared substrates (V2 / V5 / V6+V7 core), user-approved.** No
 providers/execution/secrets touched.
 
+## Active — Wave 1: shared substrates (V2 / V5 / V6+V7), authorized 2026-07-23
+
+### V2 — equal-treatment protocol + the validation_pending disposition (verifying)
+
+> Building V2 surfaced that the 2-value disposition model couldn't express its
+> "unfair/incomplete comparison → cap at validation_pending" outcome. **User approved
+> extending the model** to a third disposition.
+
+- [x] Disposition model extended to 3 values with severity order **reject >
+      validation_pending > needs_human_review** (an unverifiable check outranks a review
+      flag — can't route for final human judgment while verification is incomplete).
+      `run_cascade` precedence rewritten (reject + exception short-circuit;
+      validation_pending + review do NOT, so a later reject still wins); `failed_stage`
+      is severity-based; the exception stage now carries validation_pending; added
+      `unverifiable_stages`.
+- [x] V2 `check_equal_treatment` (`validation/equal_treatment.py`): identical split +
+      preprocessing + equal, logged hp-budget across the candidate/null arms; every
+      failure → validation_pending. **Anti-vacuous-pass: FAILS CLOSED on any un-logged
+      field.** `treatment_fingerprint` (order-invariant, deterministic content hash) +
+      frozen `TreatmentRecord`. NOT wired as a live cascade stage.
+- [x] Tests: 3-value precedence additions (`test_review_disposition.py`) +
+      `test_equal_treatment.py`. Suite **321 passed, 2 xfailed, deterministic**.
+- [x] research-skeptic (round 3) + independent code review — **CONVERGED**: cascade 3-value
+      precedence + safety invariant = **GO** (both verified sound; reject never masked;
+      failed_stage label-consistent; empty-generator residual closed). Both reproduced the
+      same **3 V2 fail-open holes** (NaN/inf hp_budget → vacuous PASS; NaN budget_tol disables
+      the asymmetry check; `treatment_fingerprint` str/delimiter collisions certify a different
+      split as "equal").
+- [x] **V2 holes FIXED** (`equal_treatment.py`): `_finite_nonneg_int` guard on budget + tol
+      (NaN/inf/negative/non-int → fail closed); `treatment_fingerprint` now repr-serializes
+      (type-aware) and hashes each element to fixed width before combining (no delimiter
+      collision). 8 regression tests (fail-before/pass-after). Suite **329 passed, 2 xfailed,
+      deterministic**.
+- [x] research-skeptic round 4 — **GO for wiring V2.** All 3 holes reproduced as closed, no
+      new fail-open; order-invariance, in-/cross-process determinism, numpy/pandas parity all
+      preserved. Flagged 3 non-blocking fail-closed caveats → closed 2 (empty-collection
+      fingerprint → fail closed; numeric-string budget → clean reason via a real-number type
+      guard), left 1 (disposition on a passing V2 — ignored). Suite **331 passed, 2 xfailed,
+      deterministic**. **V2 DONE.**
+- [ ] **Verification debt (code-review FYI, accepted/pre-existing):** an exception
+      short-circuits `run_cascade` (→ validation_pending), so a would-be `reject` in a *later*
+      stage is masked as validation_pending. Not a safety failure (both are non-promoting; no
+      false-negative to capital), but if a strategy's own stage can crash before a rejecting
+      stage runs, the label understates severity. Track; revisit when checks are wired live.
+- [ ] V5 — macro/micro dual aggregation (pooled + per-regime; pooled-only fails).
+- [ ] V6+V7 — shared ranking-stability core (threshold sweep + cross-metric stability).
+
 ## Bootstrap (done)
 
 - [x] Convert original brief `.rtf` → `CLAUDE.md`.

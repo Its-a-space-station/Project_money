@@ -18,6 +18,7 @@ from project_money.validation import (
     CheckResult,
     NEEDS_HUMAN_REVIEW,
     REJECT,
+    VALIDATION_PENDING,
     Stage,
     check_calibration,
     check_cost_gate,
@@ -183,6 +184,44 @@ class TestCascadePrecedence:
         result = run_cascade("c", [Stage("ok", lambda c: (True, {}, [], "buy"))])
         assert result.label == "trigger_ready_research_candidate"
         assert result.stages[-1].reasons == []
+
+    # --- 3-value model: validation_pending disposition (reject > validation_pending > review) ---
+
+    def test_validation_pending_only(self):
+        result = run_cascade("c", [_stage("vp", False, VALIDATION_PENDING)])
+        assert result.label == "validation_pending"
+        assert not result.passed
+        assert result.unverifiable_stages == ["vp"]
+
+    def test_validation_pending_outranks_review_either_order(self):
+        for order in (["review", "vp"], ["vp", "review"]):
+            stages = [
+                _stage("review", False, NEEDS_HUMAN_REVIEW) if n == "review" else _stage("vp", False, VALIDATION_PENDING)
+                for n in order
+            ]
+            result = run_cascade("c", stages)
+            assert result.label == "validation_pending", order
+
+    def test_reject_outranks_validation_pending_and_short_circuits(self):
+        calls = []
+        # reject after an unverifiable stage still wins (vp does not short-circuit)...
+        r1 = run_cascade("c", [_stage("vp", False, VALIDATION_PENDING, calls=calls), _stage("hard", False, REJECT, calls=calls)])
+        assert r1.label == "reject" and calls == ["vp", "hard"]
+        # ...and reject first short-circuits the later unverifiable stage.
+        calls2 = []
+        r2 = run_cascade("c", [_stage("hard", False, REJECT, calls=calls2), _stage("vp", False, VALIDATION_PENDING, calls=calls2)])
+        assert r2.label == "reject" and calls2 == ["hard"]
+
+    def test_failed_stage_uses_severity_not_position(self):
+        # review(1) < validation_pending(2) < reject(3): the deciding stage is the most severe.
+        r = run_cascade("c", [_stage("review", False, NEEDS_HUMAN_REVIEW), _stage("vp", False, VALIDATION_PENDING)])
+        assert r.label == "validation_pending" and r.failed_stage == "vp"
+
+    def test_exception_outranks_pending_review_and_validation(self):
+        # An exception (→ validation_pending, short-circuits) still stops the run.
+        result = run_cascade("c", [_stage("review", False, NEEDS_HUMAN_REVIEW), _raising_stage("boom")])
+        assert result.label == "validation_pending"
+        assert result.failed_stage == "boom"  # exception stage carries validation_pending disposition
 
 
 class TestFromCheckEndToEnd:

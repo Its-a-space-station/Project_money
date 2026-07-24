@@ -478,6 +478,31 @@ fresh adversarial red-team on green, "foundational" code pays off: it found 4 re
 defects here (a provenance regression, two fail-opens, an unfrozen result type)
 that the passing suite did not.
 
+### 2026-07-23 — A hash/fingerprint whose EQUALITY is load-bearing must be collision-safe AND fail closed on degenerate inputs
+
+**Context:** V2's `treatment_fingerprint` content-hashes a split index / preprocessing
+descriptor so `check_equal_treatment` can compare the *content* of the candidate
+and null arms (an equal-treatment gate). Two independent red-teams found four ways
+it certified an unfair comparison as "equal" — a vacuous pass in a gate whose whole
+job is to fail closed: (1) `"|".join(str(x) …)` with an unescaped delimiter let
+different member-sets collide (`fp(['1|2','3']) == fp(['1','2','3'])`); (2) `str()`
+collided `1` (int) with `"1"` (str); (3) an empty collection hashed to `sha256("")`
+— a shared constant, the exact "hash to a constant" failure the `None` guard already
+existed to prevent; (4) the budget comparison used bare `<`/`>`/`abs`, so a NaN/inf
+budget slipped through (the S11/S16 NaN-fails-open family again). **Lesson:** when a
+hash/fingerprint's *equality* is load-bearing (dedup, identity keys, any
+equal-treatment / same-content gate): (a) serialize **type-aware** (`repr`, not
+`str`) and **unambiguously** — length-prefix or hash each element to a fixed-width
+digest before combining; never join with an unescaped delimiter that can appear in a
+value; (b) **fail closed on degenerate inputs** (None, empty) rather than hashing
+them to a shared constant — an un-instrumented input that hashes to a constant is a
+vacuous pass; (c) any numeric comparison inside such a gate must **guard
+finiteness/type first** (NaN/inf/non-number defeat `<`/`>`/`abs`, and a numeric
+string raises on subtraction). **Apply:** for any content-fingerprint used as an
+equality key, treat these as first-class tests — a delimiter-forgery collision test,
+a type-collision test, and a degenerate-input (None/empty) fail-closed test — the
+same way bracket tests are mandatory for a new gate.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

@@ -10,11 +10,17 @@ from project_money.validation.invariants import (
     CheckResult,
     NEEDS_HUMAN_REVIEW,
     REJECT,
+    VALIDATION_PENDING,
     FAILURE_DISPOSITIONS,
     check_data_integrity,
     check_no_lookahead,
     check_causal_transform,
     check_weights_valid,
+)
+from project_money.validation.equal_treatment import (
+    TreatmentRecord,
+    check_equal_treatment,
+    treatment_fingerprint,
 )
 from project_money.validation.metrics import compute_metrics, deflated_sharpe
 from project_money.validation.walkforward import walk_forward_splits, Split
@@ -40,7 +46,11 @@ __all__ = [
     "CheckResult",
     "NEEDS_HUMAN_REVIEW",
     "REJECT",
+    "VALIDATION_PENDING",
     "FAILURE_DISPOSITIONS",
+    "TreatmentRecord",
+    "check_equal_treatment",
+    "treatment_fingerprint",
     "check_data_integrity",
     "check_no_lookahead",
     "check_causal_transform",
