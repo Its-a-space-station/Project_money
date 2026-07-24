@@ -102,6 +102,15 @@ remain separately gated and begin only on explicit authorization recorded here.*
   credentials; validation before capital; bounded/observable/stoppable autonomy;
   no secrets.
 
+- 2026-07-23 — **Wave 2 (long-tail verifier) authorized (user, in-session):
+  "continue with Wave 2 on its own."** The remaining long-tail verifier gates
+  (V4, S4, W4, S12, V8, V3+S2, S1, and V1 — now done), deferred at the end of
+  Wave 1. Same cadence: one item at a time, maker≠checker + research-skeptic
+  red-team on every gate, one commit each. This is a **continuation of the
+  already-authorized research build phase** (2026-07-22) — every item is an S/V/W
+  verifier gate; **no new phase, no providers, no execution, no secrets, no
+  scope change.** Edge discovery (Option B) was NOT chosen and stays deferred.
+
 ## Safety rules (in force)
 
 - **Division of labor:** the assistant builds and validates; the **human operates
@@ -150,6 +159,21 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-23 — **Wave 2 started; V1 (window-completeness / anti-drop-last) DONE,
+  uncommitted, pending commit approval.** User authorized "continue with Wave 2 on
+  its own." First item built: `validation/window_completeness.py`
+  (`check_window_completeness` + `expected_window_count`) — reconciles scored
+  evaluation windows against the declared sliding-window geometry / an explicit
+  count, and asserts invariance to engineering-only params (batch/chunk); any
+  mismatch / engineering-dependence / degenerate-zero / malformed input →
+  fail-closed `reject`. NOT wired as a live cascade stage. research-skeptic round 1
+  found 3 real issues on green code (str()-collision fail-open in
+  `engineering_counts`; unvalidated `stride` knob; "bare pass over-reads
+  invariance" labeling) — all fixed; **round-2 re-verify: GO** (fresh repros, no
+  new hole). Suite **400 passed, 2 xfailed, deterministic** (371 baseline + 29
+  new). Pure research-tooling — no providers/execution/secrets. Lesson recorded
+  (str-collision class recurred). **Uncommitted; awaiting commit go-ahead.** Next:
+  V4 (effect-size gate).
 - 2026-07-23 — **Wave 1 long-tail verifier COMPLETE, committed, and PUSHED.** After
   the dedup inventory (workflow `wf_eeae6712-d2a`, 23 items → ≈17 build efforts), the
   user chose "foundational item only, then re-plan," then approved **Wave 1 (shared
@@ -351,20 +375,20 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Next recommended action
 
-- **Verifier hardening + Wave 1 long-tail substrates are DONE and pushed** (HEAD
-  `6fa86b8`; suite 371 passed / 2 xfailed). The next work is **gated and needs explicit
-  user go-ahead** — two options (see [HANDOFF.md](HANDOFF.md) §8):
-  - **Option A — Wave 2** (finish the long-tail verifier): V3+S2 vintage, W4 DSR-cardinality,
-    S12 MinTRL, V4 effect-size, S4 persistence rung-0, V1 window-completeness, V8
-    forecastability, **S1 `frozen_at` forward tracking** (the load-bearing MVP foundation) —
-    then Wave 3 (W1/W2/W3/W5/W6, S18 procedure-half) and Wave 4 (DEBT-statefulness-isolation,
-    DEBT-S5 red-team). One item at a time, maker≠checker + skeptic red-team, one commit each.
-  - **Option B — edge discovery:** read-only **Tiingo + FRED** → point-in-time, delisting-aware
-    cache (API keys human-supplied env vars — ask how; no secrets) → cached MVP screen (H1–H3;
-    lead with H3/volatility), calibration-first, every trial through the ledger + cascade + hooks
-    + research-validator, every survivor red-teamed.
-  - Recommendation: to reach a *validated survivor* fastest, lean Option B while building only
-    the Wave-2 items the MVP needs (S1, S4, V1). Either is defensible.
+- **Wave 2 (long-tail verifier) is underway** — user chose it 2026-07-23 ("continue with
+  Wave 2 on its own"). Order: **V1 → V4 → S4 → W4 → S12 → V8 → V3+S2 → S1**, one item at a
+  time, maker≠checker + skeptic red-team, one commit each.
+  - **V1 (window-completeness / anti-drop-last): DONE, uncommitted** — awaiting commit
+    go-ahead (suite 400 passed / 2 xfailed).
+  - **Next: V4** — effect-size gate (economic magnitude beside every significance/DSR
+    verdict; "significant but negligible-d" labeled accordingly). Then S4 (persistence
+    null as a public rejecting rung-0 cascade stage), W4 (search-space cardinality → DSR
+    true trial count), S12 (MinTRL + Sortino), V8 (spectral-entropy forecastability),
+    V3+S2 (pretrained/LLM-feature vintage extension), **S1 `frozen_at` forward tracking**
+    (the load-bearing MVP foundation). Then Wave 3 (W1/W2/W3/W5/W6, S18 procedure-half)
+    and Wave 4 (DEBT-statefulness-isolation, DEBT-S5 red-team).
+  - Edge discovery (Option B: Tiingo/FRED → cached MVP screen) was NOT chosen; it stays
+    available and gated for later (see [HANDOFF.md](HANDOFF.md) §8).
 - **Still gated (unchanged):** any Robinhood data or execution path, fund movement, live
   scheduling, ML/forecasting, options. Execution is reached only after a strategy clears the
-  full verification stack (edge-first). The Wave-1 verifier work did NOT change this.
+  full verification stack (edge-first). The Wave-2 verifier work does NOT change this.

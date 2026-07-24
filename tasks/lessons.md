@@ -503,6 +503,33 @@ equality key, treat these as first-class tests — a delimiter-forgery collision
 a type-collision test, and a degenerate-input (None/empty) fail-closed test — the
 same way bracket tests are mandatory for a new gate.
 
+### 2026-07-23 — Keying a collection of a gate's own inputs by str() silently drops colliding entries (the str-collision class, recurring)
+
+**Context:** V1 (window-completeness) round-1 red-team. `engineering_counts` was
+intaken into a dict keyed by `str(label)`, so two distinct labels sharing a str()
+(`{32: 64, "32": 90}` — a batch size given as int in one place, str in another)
+silently dropped one entry: the violating count 64 was overwritten by 90 and the
+invariance sub-check passed. Worse, the verdict flipped with dict order. This is
+the SAME str()-collision mechanism that bit V2's `treatment_fingerprint` (int `1`
+vs str `"1"`); it has now recurred across two gates, so it is a class, not an
+incident.
+**Lesson:** A verifier must never silently drop one of its OWN inputs, and must
+never be iteration-order-dependent. Re-keying a collection by `str(x)` does both
+when two inputs collide under str(). This generalizes the V2 collision-safe-
+fingerprint lesson beyond hashes: ANY str()-keyed container of a gate's inputs
+(dict keys, dedup sets) can conflate distinct inputs into a vacuous pass. (The same
+round-1 pass also caught an unvalidated `stride` knob accepted whenever no geometry
+consumed it — a confirming instance of "a verifier's own knobs are attack surfaces":
+an out-of-range knob that a later path would divide by must be rejected on every
+path, not only the one that reads it.)
+**Apply:** Store a gate's own multi-input collections as a list of `(label, value)`
+pairs and iterate that — preserve every input; never re-key by str() where a
+collision can drop or merge an entry. Validate every tunable knob unconditionally
+(integer/finite, in range) regardless of which code path consumes it, so a bad knob
+can neither be silently ignored nor reach an unguarded `// stride`. And —
+reconfirmed again — a fresh adversarial red-team on green, "trusted" code found both
+holes the passing suite did not; the round-2 re-verify converged (GO).
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

@@ -349,6 +349,50 @@ rest of the long-tail depends on. Suite grew 263 → **371 passed, 2 xfailed, de
 S4 persistence rung-0 · V1 window-completeness · V8 forecastability · **S1 frozen_at**; then Wave 3
 (W1/W2/W3/W5/W6 · S18 procedure-half) and Wave 4 (DEBT-statefulness-isolation · DEBT-S5 red-team).
 
+## Active — Wave 2: long-tail verifier items (authorized 2026-07-23)
+
+> User go-ahead 2026-07-23: **"continue with Wave 2 on its own"** — the remaining
+> long-tail verifier gates, deferred at the end of Wave 1. Same cadence: one item
+> at a time, maker≠checker + research-skeptic red-team on every gate, one commit
+> each. Every item is an S/V/W verifier gate inside the already-authorized research
+> build phase (STATE.md 2026-07-22) — no new phase, no providers, no execution, no
+> secrets. Proposed order: **V1 → V4 → S4 → W4 → S12 → V8 → V3+S2 → S1**.
+
+### V1 — window-completeness assertion / anti-drop-last (DONE, uncommitted)
+
+- [x] `validation/window_completeness.py`: `check_window_completeness` +
+      `expected_window_count`. Reconciles the scored-window count against the
+      declared sliding-window geometry (n_obs, lookback, horizon, stride) or an
+      explicit `expected_windows`, and asserts the count is invariant to
+      engineering-only params (batch/chunk) via `engineering_counts`. Any mismatch /
+      engineering-dependence / degenerate zero-window / malformed input → hard
+      `reject` (fail-closed). NOT wired as a live cascade stage — a standalone gate
+      the evaluation harness calls. Exported from the package.
+- [x] Tests: 29 in `tests/test_window_completeness.py` (formula brute-checked vs an
+      independent enumerator, drop-last caught, excess caught, engineering-variance
+      caught, explicit/geometry cross-check, vacuous-zero fail-closed, type/knob
+      fail-closed, determinism, + 3 round-1 red-team regressions). Suite **400
+      passed, 2 xfailed, deterministic** (371 baseline preserved + 29 new).
+- [x] research-skeptic red-team — round 1 found 3 real issues on green code (MED
+      str()-collision fail-open in `engineering_counts`; LOW unvalidated `stride`
+      knob; I2 "a bare pass over-reads invariance" labeling). Fixed: list of
+      `(label, count)` pairs (no str() re-key), unconditional stride validation with
+      the `// stride` division guarded, and a "Scope — do not over-read a pass"
+      docstring note. **Round-2 re-verify: GO** — both holes closed with fresh
+      repros, no false-positive, no double-report, no new hole. Lesson recorded
+      (str-collision class recurred: V2 fingerprint → V1 mapping-key).
+
+### Review — Wave 2 · V1 (2026-07-23)
+
+**Done & verified (uncommitted).** V1 window-completeness is the first Wave-2 gate,
+built maker≠checker + research-skeptic to convergence (rounds 1→2 GO). A pass
+certifies scored-count vs declared-geometry consistency (and cross-engineering
+invariance when `engineering_counts` is supplied); it cannot see a *lie* about the
+declared geometry (I1, inherent to a count-reconciliation gate, documented in-code).
+All failure paths carry the `reject` disposition. Pure research-tooling — no
+providers/execution/secrets. Remaining Wave-2 items (V4, S4, W4, S12, V8, V3+S2, S1)
+queued, one commit each.
+
 ## Bootstrap (done)
 
 - [x] Convert original brief `.rtf` → `CLAUDE.md`.

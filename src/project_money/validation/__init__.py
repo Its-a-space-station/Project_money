@@ -31,6 +31,10 @@ from project_money.validation.ranking_stability import (
 from project_money.validation.metrics import compute_metrics, deflated_sharpe
 from project_money.validation.walkforward import walk_forward_splits, Split
 from project_money.validation.split_integrity import check_temporal_holdout
+from project_money.validation.window_completeness import (
+    check_window_completeness,
+    expected_window_count,
+)
 from project_money.validation.forecast_diagnostics import (
     r_squared,
     check_returns_not_levels,
@@ -70,6 +74,8 @@ __all__ = [
     "walk_forward_splits",
     "Split",
     "check_temporal_holdout",
+    "check_window_completeness",
+    "expected_window_count",
     "r_squared",
     "check_returns_not_levels",
     "check_horizon_monotonicity",
