@@ -150,6 +150,25 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-23 — **Wave 1 long-tail verifier COMPLETE, committed, and PUSHED.** After
+  the dedup inventory (workflow `wf_eeae6712-d2a`, 23 items → ≈17 build efforts), the
+  user chose "foundational item only, then re-plan," then approved **Wave 1 (shared
+  substrates), one item at a time.** Built + red-teamed to convergence: (1) a
+  **machine-readable 3-value cascade disposition model** — `CheckResult.disposition`
+  (frozen, validated), severity `reject > validation_pending > needs_human_review`,
+  disposition-aware `run_cascade` (only reject/exception short-circuit), `Stage.from_check`;
+  the review checks (S11/S5/S10-split/S16/S26) are disposition-tagged but **NOT wired as
+  live cascade stages** (debt-e); (2) **V2** equal-treatment (`equal_treatment.py`); (3)
+  **V5** regime-robustness (`regime_robustness.py`); (4) **V6/V7** ranking/threshold
+  stability (`ranking_stability.py`). The `research-skeptic` found a real **fail-open in
+  every gate on green code** (failed_stage/empty-cascade, V2 NaN-vacuous-pass + fingerprint
+  collision, V5 non-finite-bar + knob-laundering, V6 degenerate-sweep) — **all fixed +
+  regression-tested**; the safety invariant (softer disposition never masks a harder one;
+  reject always wins) re-verified each round. Suite **371 passed, 2 xfailed, deterministic**
+  (263 baseline + 108 new). Four commits pushed: `638c6ba` → `d074b6e` → `650a390` →
+  `6fa86b8` (HEAD, in sync with origin). Research-tooling only — no provider/execution/secrets.
+  HANDOFF.md rewritten. Wave 2+ deferred, needs go-ahead. (A prompt-injection in an injected
+  Consensus-MCP instruction was flagged + refused.)
 - 2026-07-23 — **Long-tail verifier re-planned; first foundational item built
   (DEBT-review-disposition).** Verifier-hardening phase 1 is DONE **and pushed**
   (HEAD was `cc3106e`, working tree clean — the earlier "committed, not pushed"
@@ -332,20 +351,20 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Next recommended action
 
-- **Decisions made (2026-07-22): 1–4 ungating recorded; first research phase
-  authorized.** Both authorizations were given by the user in-session; the
-  approved-decisions ledger records them. The Robinhood execution build remains
-  gated behind a *validated survivor* (edge-first) and may never be built if
-  nothing survives — that is the intended, money-saving outcome.
-- **In progress — verifier hardening (research phase 1):** lead with the
-  known-bad specimen fixtures (prove the harness rejects batch-6's junk before any
-  pass is trusted — fail-before/pass-after), the calibration/ECE axis (S26), and
-  the leakage-detector GAPS (S6 intra-bar, S7 non-causal decomposition, S8
-  non-causal feature construction), plus the persistence/cost/DSR gates and S1
-  forward-tracking. maker ≠ checker on every new gate; research-skeptic red-teams
-  each. See `tasks/todo.md` → "research phase 1".
-- **Then:** read-only Tiingo + FRED adapters into a point-in-time cache
-  (delisting-aware equity/ETF panel) → cached MVP screen (H1–H3 seeds; consider
-  leading with H3/volatility, the best-evidenced seed).
-- **Still gated:** any Robinhood data or execution path, ML/forecasting, options.
-  Execution is reached only after a strategy clears the full verification stack.
+- **Verifier hardening + Wave 1 long-tail substrates are DONE and pushed** (HEAD
+  `6fa86b8`; suite 371 passed / 2 xfailed). The next work is **gated and needs explicit
+  user go-ahead** — two options (see [HANDOFF.md](HANDOFF.md) §8):
+  - **Option A — Wave 2** (finish the long-tail verifier): V3+S2 vintage, W4 DSR-cardinality,
+    S12 MinTRL, V4 effect-size, S4 persistence rung-0, V1 window-completeness, V8
+    forecastability, **S1 `frozen_at` forward tracking** (the load-bearing MVP foundation) —
+    then Wave 3 (W1/W2/W3/W5/W6, S18 procedure-half) and Wave 4 (DEBT-statefulness-isolation,
+    DEBT-S5 red-team). One item at a time, maker≠checker + skeptic red-team, one commit each.
+  - **Option B — edge discovery:** read-only **Tiingo + FRED** → point-in-time, delisting-aware
+    cache (API keys human-supplied env vars — ask how; no secrets) → cached MVP screen (H1–H3;
+    lead with H3/volatility), calibration-first, every trial through the ledger + cascade + hooks
+    + research-validator, every survivor red-teamed.
+  - Recommendation: to reach a *validated survivor* fastest, lean Option B while building only
+    the Wave-2 items the MVP needs (S1, S4, V1). Either is defensible.
+- **Still gated (unchanged):** any Robinhood data or execution path, fund movement, live
+  scheduling, ML/forecasting, options. Execution is reached only after a strategy clears the
+  full verification stack (edge-first). The Wave-1 verifier work did NOT change this.

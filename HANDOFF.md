@@ -1,17 +1,21 @@
-# HANDOFF.md — Project_money → edge discovery
+# HANDOFF.md — Project_money → long-tail verifier (Wave 2) or edge discovery
 
 > **Purpose.** A self-contained brief so a fresh session (or the user) can pick up
 > without re-deriving context. It supersedes all earlier handoffs. Read it
 > alongside `CLAUDE.md` (governance + doctrine), `STATE.md` (live snapshot), and
 > `tasks/todo.md` + `tasks/lessons.md`.
 >
-> **One-line status:** research phase 1 — **verifier hardening — is COMPLETE and
-> pushed.** The harness provably rejects all five §9 known-bad specimens and every
-> §6-GAP detector is built and adversarially red-teamed to convergence. The next
-> phase is **edge discovery** (read-only providers → cached MVP screen), which is
-> gated and **not yet started** — it needs explicit user go-ahead (CLAUDE.md §6).
+> **One-line status:** research phase 1 (**verifier hardening**) and the **first
+> long-tail verifier wave (Wave 1: the machine-readable disposition model + V2 / V5 /
+> V6 / V7)** are both **COMPLETE, committed, and pushed.** The verifier now rejects
+> all five §9 known-bad specimens, has all four §6-GAP detectors, and adds a 3-value
+> cascade disposition model plus three Wave-1 gate families. The next work is either
+> **Wave 2** (the remaining long-tail verifier items) or **edge discovery**
+> (read-only providers → cached MVP screen) — **both are gated and need explicit user
+> go-ahead** (CLAUDE.md §6). Nothing is wired to live capital; no execution path exists.
 
-*Written: 2026-07-23. HEAD at handoff: `792ff54`. Branch `main`, pushed, clean.*
+*Written: 2026-07-23. HEAD at handoff: `6fa86b8`. Branch `main`, pushed, clean, in
+sync with `origin/main`.*
 
 ---
 
@@ -21,8 +25,7 @@ A quantitative **research-and-trading** system. It discovers and validates
 systematic strategies and, for the survivors, executes them as **automated trades
 through Robinhood — operated by the human, engineered and validated by the
 assistant.** The research/validation engine is both the product and the safety
-rail: only strategies proven through the full verification stack ever reach
-capital.
+rail: only strategies proven through the full verification stack ever reach capital.
 
 **The three constraints that govern everything (internalize these):**
 
@@ -30,8 +33,7 @@ capital.
    assistant designs, builds, tests, and validates the software. The **human
    operates live capital** — the assistant never itself places a live order, moves
    funds, flips a system to live, or handles live credentials. *This holds
-   regardless of phase or precedent* (the Kalshi bot existing is not license to
-   cross it).
+   regardless of phase or precedent.*
 2. **Validation before capital.** Nothing reaches live money without clearing the
    full stack: maker ≠ checker, deflated-Sharpe / multiplicity control, leakage &
    contamination audits, cost-inclusive evaluation, contamination-free forward
@@ -50,206 +52,227 @@ shadow-canary → human-approved live → (later) bounded auto-trade.
 
 1. `CLAUDE.md` — governance (Part I) + quant-research doctrine (Part II).
 2. `STATE.md` — current phase, authorized scope, approved decisions, last checkpoint.
-3. `tasks/todo.md` (esp. the **verifier-hardening review section** + the
-   **Verification debt** bullet) and `tasks/lessons.md`.
+3. `tasks/todo.md` (esp. the **Wave-1 review section** + the **long-tail verifier
+   inventory** + the **Verification debt** bullet) and `tasks/lessons.md`.
 4. This file.
 5. `docs/stock_market_synthesis.md` §5/§6/§11 (the S1–S30 spec + the known-bad
-   specimen list) if touching verifier items; the other five syntheses (§7) as needed.
+   specimens) if touching S-items; `docs/ts_forecasting_integration.md` §4.1 (V1–V8)
+   and `docs/graph_ml_synthesis.md` §4.1 (W1–W6) for those queues.
 6. `docs/safety_policy.md`, `docs/broker_strategy.md`, `docs/provider_strategy.md`
    before any provider/execution-adjacent work.
 
 ## 3. Current state snapshot
 
 - **Repo:** `github.com/Its-a-space-station/Project_money`, branch `main`,
-  HEAD `792ff54`, working tree clean, **pushed and in sync with `origin/main`.**
-- **Tests:** `./.venv/bin/python -m pytest -q` → **263 passed, 2 xfailed**,
-  deterministic across runs (~7s). Venv at `.venv/` (Python 3.14.3;
-  `pip install -e ".[dev]"`). 21 test files.
+  HEAD `6fa86b8`, working tree clean, **pushed and in sync with `origin/main`.**
+- **Tests:** `./.venv/bin/python -m pytest -q` → **371 passed, 2 xfailed**,
+  deterministic across runs (~8s). Venv at `.venv/` (Python 3.14.3;
+  `pip install -e ".[dev]"`). 26 test files.
   - The **2 xfails are intentional, documented isolation limits** (not failures):
     `ComputeOnceIntrabarLeak` (S6) and `FitOnceScaler` (S7/S8) — full-sample
-    fit-once/compute-once stateful functions that in-process execute-and-compare
-    cannot certify; the true fix is process/instance isolation (verification debt).
+    fit-once/compute-once stateful functions in-process execute-and-compare cannot
+    certify; the fix is process/instance isolation (see §6, Wave 4).
 - **Hooks are ACTIVE** (`.claude/settings.json`): every Write/Edit runs the
   finding-promotion validator; every Bash runs the findings-write guard. Both fail
-  closed and are target-aware (they will not false-positive on `git commit`).
+  closed and are target-aware (they do not false-positive on `git commit`).
+- **A Stop-hook verification gate** blocks finishing while `tasks/todo.md` has
+  unchecked items — verify, update the file, then finish (or state why items are
+  deferred). Expect it to fire; respond with the disposition.
 - **Git discipline:** stage explicit paths only (never `git add -A`); ask before
-  commit/push; end a unit of work with `git status --short` + `git diff --stat`.
-  This session's six verifier commits (`e6bf78b`→`8339581`) plus the review-section
-  doc commit (`792ff54`) are all pushed.
+  commit/push. This session's four commits are pushed:
+  `638c6ba` (review-disposition) → `d074b6e` (V2 + validation_pending) →
+  `650a390` (V5) → `6fa86b8` (V6/V7).
 
-## 4. What research phase 1 accomplished (verifier hardening — DONE)
+## 4. What this session accomplished — Wave 1 long-tail verifier (DONE, pushed)
 
-Committed in six feature/fix commits + one doc commit, all pushed:
+The session opened with research phase 1 (verifier hardening) already complete and
+pushed. It then re-planned and built the **first long-tail wave**. Key moves:
 
-- **All five §9 "must-reject" known-bad specimens are provably rejected** by the
-  harness (the calibration-first milestone): Mehtab-Sen intra-bar (S6), CNN-LSTM
-  shuffled split (S9), Nabipour flat-horizon (S5/S10), MarketSenseAI time-travel
-  (S3, existing vintage auditor), Paper 8 compound (S11/S16 + full-sample scaler
-  via `check_no_lookahead`).
-- **All four §6-GAP detectors built:** S6 intra-bar, S7/S8 non-causal transforms,
-  S26 calibration axis (the harness had no calibration dimension before).
-- **Every detector was adversarially red-teamed to convergence** with the
-  `research-skeptic` subagent (S6 ×3 rounds, S9/S5/S10 ×3, S11/S16 ×1, S7/S8+core
-  ×1, S26 ×2). ~30 real holes were found and fixed — **including two CRITICAL ones
-  in code that was already committed and "trusted":** the `check_no_lookahead`
-  grid-gaming / untested-tail flaw (finite-horizon leaks are only visible at the
-  cutoff boundary → exhaustive cutoffs now), and the S26 fixed-ECE-bar that flagged
-  a *perfect* forecaster ~89% of the time at N=50 (→ bootstrap null band). **Unit
-  tests missed both** — the red-team is load-bearing, not ceremony. Every exploit
-  is now a permanent regression specimen in `tests/specimens.py`.
+1. **A read-only dedup inventory** (resumable Workflow `wf_eeae6712-d2a`, 4 mappers)
+   mapped the **23 remaining verifier items** (V1–V8, W1–W6, S1/S2/S4/S12/S18, 4 debt
+   items) against the harness with file:line evidence. Headline: most V/W items were
+   `partial` (substrate exists, gate doesn't) — the dedup **merges** work, it does not
+   eliminate it. **Net ≈17 build efforts, 1 skip, 1 half-blocked-on-data.** The
+   inventory drives Wave 2–4 below (§8).
+2. The user chose **"build the foundational item only, then re-plan,"** then approved
+   **Wave 1 (the shared substrates)**, one item at a time.
+
+**Wave 1 deliverables (all committed + pushed):**
+
+- **A machine-readable, 3-value cascade disposition model** (`638c6ba`, extended in
+  `d074b6e`). `CheckResult` gained a validated, **frozen** `disposition` field; the
+  cascade can now emit a **canonical label other than a hard `reject`.** Severity order:
+  **`reject` > `validation_pending` > `needs_human_review`** (an unverifiable check
+  outranks a review flag — you can't route for final human judgment while verification
+  is incomplete). `run_cascade` precedence: `reject` and exceptions short-circuit;
+  `validation_pending` and `needs_human_review` do **not** (so a later hard reject
+  always wins — the safety invariant). `Stage.from_check` bridges a `CheckResult` into
+  a stage. The review-flavored checks (S11, S5 returns-bar, **S10 split so a strictly
+  inverted horizon curve now hard-rejects**, S26) emit the right disposition — but are
+  **NOT registered as live cascade stages** (todo debt-e: wiring them is future work).
+- **V2** equal-treatment (`equal_treatment.py`, `d074b6e`) — a candidate-vs-null
+  comparison is only fair with identical split + preprocessing + an equal, logged
+  hyperparameter budget; every failure → `validation_pending`. **Fails closed on any
+  un-logged field / non-finite budget / degenerate split** (the anti-vacuous-pass
+  guard). `treatment_fingerprint` is an order-invariant, deterministic, **collision-safe**
+  content hash (repr + per-element fixed-width digest).
+- **V5** regime-robustness (`regime_robustness.py`, `650a390`) — a pooled (micro) edge
+  must be corroborated per **pre-registered** regime. Prevalence-skew (a judgeable
+  regime fails while pooled clears) → `needs_human_review`; too little of the data
+  judgeable → `validation_pending`; malformed → `reject`; no pooled edge → pass.
+- **V6/V7** ranking/decision-stability (`ranking_stability.py`, `6fa86b8`) — shared
+  core `_worst_pairwise` (the worst pairwise agreement across a swept knob). **V7**:
+  a ranking that reorders across ≥2 metrics → `needs_human_review`. **V6**: an
+  accept/reject decision that flips under a pre-registered threshold sweep → knife-edge
+  → `needs_human_review`; a non-bracketing sweep → `validation_pending`.
+
+**The red-team stayed load-bearing.** Every gate was green on my own tests, yet the
+`research-skeptic` found a real **fail-open in each** — the review-disposition
+`failed_stage`/empty-cascade holes, V2's NaN-vacuous-pass + fingerprint collisions,
+V5's non-finite-`bar` pass + knob-laundering, V6's degenerate-sweep pass — **all fixed
++ regression-tested.** ~6 skeptic rounds; the safety invariant (a softer disposition
+can never mask a harder one; a real `reject` always wins) was re-verified after each
+change. The recurring class is captured in `tasks/lessons.md` (collision-safe /
+fail-closed hash-equality gates; NaN / knob attack surfaces). *A prompt-injection buried
+in an injected Consensus-MCP server instruction was flagged and refused, not acted on.*
 
 ## 5. What exists — the verifier stack (built, tested, deterministic)
 
-Backbone under `src/project_money/` (present before this phase, 170 tests):
+Backbone under `src/project_money/`. Selected modules (see the full inventory in the
+old handoff's git history if needed):
 
 | Module | What it does |
 | --- | --- |
-| `validation/invariants.py` | stage-0 invariants; `check_no_lookahead` (**now exhaustive-cutoff hardened**) + the shared `_whole_window_causal_check` core |
-| `validation/metrics.py` | multi-metric eval + **deflated Sharpe** (empirical cross-trial variance benchmark; raw-kurtosis guard); the linear-turnover cost model (`portfolio_returns`) |
-| `validation/walkforward.py` | walk-forward with **purge / embargo** |
-| `validation/prequential.py` | prequential codelength vs a Gaussian null |
-| `validation/cascade.py` | staged evaluation cascade emitting **canonical labels only** (fail → `reject`) |
-| `leakage/vintage.py` | data-vintage / knowledge-cutoff / formation-date auditor (**S3**) |
-| `falsification/controls.py`, `harness.py` | known-zero controls + bracket/nuisance/differential primitives |
-| `ledger/hypothesis_ledger.py` | append-only JSONL trial registry (feeds DSR), tabu memory, canonical-status enforcement |
-| `complexity/mdl_gate.py` | per-knob bits hurdle, permuted-null capacity, noisy-knob jitter |
-| `registry/`, `toolfactory/`, `memory/` | typed read-only tool registry; held-out admission gate; stable ids / order-invariant digest |
+| `validation/invariants.py` | stage-0 invariants; `check_no_lookahead`/`check_causal_transform` (exhaustive-cutoff hardened); **`CheckResult` now carries a frozen, validated `disposition`; disposition constants `REJECT`/`VALIDATION_PENDING`/`NEEDS_HUMAN_REVIEW` + `FAILURE_DISPOSITIONS`** |
+| `validation/cascade.py` | **3-value disposition-aware `run_cascade`** (severity `reject > validation_pending > needs_human_review`; only reject/exception short-circuit); `Stage.from_check`; `StageResult.disposition`; `failed_stage` severity-based; `review_stages`/`unverifiable_stages` |
+| `validation/equal_treatment.py` | **V2** `check_equal_treatment` + `treatment_fingerprint` + `TreatmentRecord` |
+| `validation/regime_robustness.py` | **V5** `check_regime_robustness` (macro/micro dual aggregation) |
+| `validation/ranking_stability.py` | **V6/V7** `check_threshold_stability`, `check_cross_metric_stability`, `rank_agreement`, `_worst_pairwise` |
+| `validation/metric_plausibility.py` | S11 accuracy-plausibility (review), S16 cost gate (reject) — now disposition-tagged |
+| `validation/forecast_diagnostics.py` | S5 returns-not-levels, S10 horizon-monotonicity (**inverted → reject, flat/uneven → review**) |
+| `validation/calibration.py` | S26 calibration axis (review) |
+| `validation/metrics.py` · `walkforward.py` · `split_integrity.py` · `prequential.py` | metrics + deflated Sharpe · walk-forward purge/embargo · S9 temporal split-integrity · prequential codelength |
+| `leakage/intrabar.py` · `leakage/vintage.py` | S6 intra-bar · S3 data-vintage auditor |
+| `falsification/` · `complexity/mdl_gate.py` · `ledger/hypothesis_ledger.py` | known-zero controls + bracket/nuisance/differential · MDL knob hurdle · append-only trial ledger + tabu + canonical statuses |
 
-**New detectors this phase** (each with a specimen + causal counterpart in
-`tests/specimens.py`, and a dedicated test file):
-
-| Item | Where | Public entry point(s) | Catches |
-| --- | --- | --- | --- |
-| **S6** intra-bar contemporaneous leakage | `leakage/intrabar.py` | `check_intrabar_causality(signal_fn, bars, decision_at=…)` | same-bar OHLC used to decide at the open (Mehtab-Sen 94.76%); execute-and-compare with a cold-reindex statefulness probe |
-| **S7/S8** non-causal transform leakage | `validation/invariants.py` | `check_causal_transform(transform_fn, data)` | full-sample scaling/decomposition/spline (generalizes `check_no_lookahead` to any preprocessing/feature transform via the shared core) |
-| **S9** temporal split integrity | `validation/split_integrity.py` | `check_temporal_holdout(train_index, test_index, full_index=…, label_horizon=…)` | shuffle-then-split interleaving (CNN-LSTM); fail-closed on NaT/tz/dup/unsorted |
-| **S5/S10** forecast diagnostics | `validation/forecast_diagnostics.py` | `check_returns_not_levels(…)`, `check_horizon_monotonicity(…)`, `r_squared` | level-fit mirage / repackaged persistence (three-regime, integratedness-inferred); flat/inverted horizon-error curve (Nabipour) |
-| **S11/S16** metric plausibility + cost | `validation/metric_plausibility.py` | `check_directional_accuracy_plausible(…)`, `check_cost_gate(…, weights=…, asset_returns=…)` | implausible OOS accuracy; cost-free/edge-vanishes-net (recomputes from artifacts) |
-| **S26** calibration axis | `validation/calibration.py` | `check_calibration(pred_probs, outcomes)`, `expected_calibration_error`, `reliability_curve` | miscalibrated probabilities via per-bin studentized test + family-wise bootstrap null |
-
-**Config layer (unchanged):** four subagent roles (`.claude/agents/`:
-data-navigator, strategy-analyst, research-validator, **research-skeptic** — use it
-to red-team every new gate), two skills (`.claude/skills/`: research-pipeline,
-trajectory-judge), fail-closed promotion hooks, six canonical schemas (`schemas/`).
+**Config layer (unchanged):** four subagent roles (`.claude/agents/`: data-navigator,
+strategy-analyst, research-validator, **research-skeptic — use it to red-team every new
+gate**), two skills (research-pipeline, trajectory-judge), fail-closed promotion hooks,
+six canonical schemas (`schemas/`).
 
 **Still NOT built (all separately gated):** provider adapters (Tiingo/FRED), any
 Robinhood data or execution path, ML/forecasting models, options/cross-asset, live
-scheduling.
+scheduling. **None of the disposition-tagged checks are wired into a live cascade yet.**
 
-## 6. Verification debt & remaining verifier items (do not rediscover these)
+## 6. Verification debt & residuals (do not rediscover these)
 
-Tracked, honest residuals (see `tasks/todo.md` "Verification debt" bullet):
-
-- **Adversarial statefulness needs isolation.** In-process execute-and-compare
-  (S6, S7/S8, `check_no_lookahead`) cannot certify a full-sample fit-once/compute-once
-  `signal_fn`/transform. The two xfails document this; the real fix is a
-  subprocess/fresh-instance harness (or requiring a *factory* not a fitted object).
-- **`max_test_bars` fast path** (S6 and the causal core) is a best-effort screen —
-  a strided subset is in principle recomputable; **exhaustive (the default) is the
-  trustworthy mode.**
-- **Review-disposition wiring.** S11, S10, the S5 returns bar, and the S16
-  rate-advisory are `needs_human_review` flags, but `CheckResult` is binary and
-  `run_cascade` maps any fail → `reject`. **When these get wired into a cascade,
-  give them a machine-readable review disposition — do NOT register them as
-  rejecting stages** (else legitimate strategies are hard-rejected).
-- **One-sided alarms must be composed.** S11/S16/S26 pass a trivial null; they are
-  never standalone edge screens — compose with deflated-Sharpe, `check_no_lookahead`,
-  and (for calibration) `prequential_log_loss`.
-- **S5 delegates contemporaneous leaks** to the one-bar execution lag + S6 +
-  walk-forward. **TODO: a dedicated red-team confirming that path actually covers
+- **Adversarial statefulness needs isolation** (the 2 xfails). In-process
+  execute-and-compare can't certify a full-sample fit-once/compute-once `signal_fn`/
+  transform. Fix: a factory-injection (fresh instance per cutoff) or subprocess harness
+  — **this is Wave-4 item DEBT-statefulness-isolation; it flips both xfails to xpass.**
+- **Review-disposition NOT wired into a live cascade.** The disposition tags exist on
+  S11/S5/S10/S16/S26/V2/V5/V6/V7 `CheckResult`s, but **no check is registered as a
+  `run_cascade` stage yet** (debt-e). When wiring, use `Stage.from_check` so the
+  disposition flows; never register a review check as a hard-rejecting stage.
+- **Exception can mask a later reject.** An exception short-circuits `run_cascade` to
+  `validation_pending`, so a would-be `reject` in a *later* stage is not reached. Not a
+  safety failure (both are non-promoting), but the label understates severity — tracked.
+- **S18 membership-half is blocked on provider data** (point-in-time constituent
+  membership needs the panel that doesn't exist until the gated data phase). Only the
+  selection-procedure-audit half is buildable now.
+- **Inherent limits:** V5's up-to-`(1-min_coverage)` small-regime blind spot; V6's
+  wide-margin-unanimous → `validation_pending` (intentional: a sweep that doesn't bracket
+  the data can't verify robustness). All V5/V6/V7 knobs are pre-registration-load-bearing.
+- **max_test_bars fast path** is a best-effort screen; exhaustive (the default) is the
+  trustworthy mode. **DEBT-max-test-bars = SKIP** (guard by policy, not code).
+- **S5 delegates contemporaneous leaks** to the one-bar lag + S6 + walk-forward —
+  **Wave-4 item DEBT-S5-contemporaneous: a dedicated red-team confirming that path covers
   autocorrelated/level targets** (skeptic-recommended, not yet done).
-- **Inherent limits:** S5 φ<0.97 abstain-regime honesty gap (not capital-at-risk);
-  S26 sub-finest-bin anti-calibration + small-N power loss.
-
-Remaining verifier items (lower-priority / MVP-coupled, **not** started): **S1**
-`frozen_at` forward tracking (comes with the MVP), **S2** LLM-feature vintage
-extension, **S18** universe/survivorship point-in-time audit (Paper 8's last
-channel), **S12** min-track-record-length, **S4** persistence-null cascade stage,
-and the **V1–V8 / W1–W6** queues (largely overlap what's built — dedupe before
-building).
 
 ## 7. The knowledge base — six corpora ingested, synthesized, verified
 
-Unifying finding: **no corpus produced a validated daily-horizon edge; the
-verifier, not any model, is the durable asset.** Docs: `agent_tooling_synthesis`
-(38 coding papers — "verifier is the product"), `trading_corpus_synthesis` (28
-books — 25 hypothesis families; MVP seeds H1/H2/H3; delisting-aware panel required),
-`ml_shelf_integration` (20 PDFs — fixed the DSR defect), `ts_forecasting_integration`
-(26 papers — V1–V8; baselines-as-nulls), `graph_ml_synthesis` (25 papers — W1–W6;
-graph-ML = do-not-build), `stock_market_synthesis` (73 papers — **zero validated
-edges**; the S1–S30 spec + the §9 known-bad specimens the harness now rejects).
+Unifying finding: **no corpus produced a validated daily-horizon edge; the verifier,
+not any model, is the durable asset.** Docs: `agent_tooling_synthesis` (38 coding papers),
+`trading_corpus_synthesis` (28 books — 25 hypothesis families; MVP seeds H1/H2/H3;
+delisting-aware panel required), `ml_shelf_integration` (20 PDFs — fixed the DSR defect),
+`ts_forecasting_integration` (26 papers — **V1–V8** live in §4.1), `graph_ml_synthesis`
+(25 papers — **W1–W6** in §4.1; graph-ML = do-not-build), `stock_market_synthesis`
+(73 papers — **zero validated edges**; the S1–S30 spec + the §9 known-bad specimens).
 
-## 8. NEXT PHASE — edge discovery (gated; not started)
+## 8. NEXT WORK — two gated options (neither started; both need go-ahead)
 
-Goal: build the smallest engine that honestly answers **"is there an edge?"** and
-is trusted when it says *no*. **Beginning provider adapters is a new build step
-that requires explicit user go-ahead** (CLAUDE.md §6) — it is authorized in scope
-by the 1–4 ungating but not yet started; confirm before writing provider code.
+The dedup inventory (§4) organizes the **remaining ~17 build efforts** into waves. The
+user's cadence is **one item at a time, maker≠checker + `research-skeptic` red-team on
+every new gate, one commit per item.** Key dedups already found: **V3 ≡ S2** (one vintage
+extension), **V6+V7** share a core (done), **V2** is the substrate for W3/W6, **V5** for W5.
 
-Recommended sequence (edge-first; verifier hardening is already done):
+**Option A — Wave 2 (continue the long-tail verifier).** Small gates, mostly extensions:
+- **V3+S2** — extend `leakage/vintage.py`: a pretrained/LLM-feature artifact with a
+  missing or post-eval training cutoff → `validation_pending`/tracked-debt, not a silent
+  pass. (One build, not two.)
+- **W4** — extend the ledger: register a search-space cardinality so a one-shot/
+  differentiable search feeds DSR its true trial count (anti-conservative-DSR class).
+- **S12** — MinTRL (min-track-record-length) + Sortino, beside `metric_plausibility`.
+- **V4** — effect-size gate (economic magnitude beside every significance verdict).
+- **S4** — promote the private `_persistence_skill` to a public **rejecting** rung-0
+  cascade stage, applied to the returns regime (auto-reject if it can't beat persistence).
+- **V1** — window-completeness assertion (anti-drop-last) beside `split_integrity`.
+- **V8** — spectral-entropy forecastability proxy (feeds confidence/abstention wording).
+- **S1** — `frozen_at` + strictly-post-timestamp forward tracking. **Load-bearing MVP
+  foundation** — the one contamination gap no after-the-fact detector can close.
 
-1. **Read-only provider data** — Tiingo + FRED into a **point-in-time / vintage-safe
-   cache.** Respect ToS + rate limits; **no secrets in the repo** (API keys are
-   human-supplied env vars at runtime — stop and ask how they're provided). A
-   **delisting-aware equity/ETF panel is a hard requirement** (batch-2 finding).
-   Robinhood stays read-only-data-only, and even that is a later, separate gate.
-2. **The cached MVP screen** — the smallest verifiable strategy screen with
-   maker/checker separation and canonical labels, run **calibration-first**:
-   - Prove the falsification battery on the documented nulls first (the harness
-     already rejects the §9 specimens — build on that).
-   - Establish Tier-1 baselines as the null every hypothesis must beat:
-     persistence, 1/N, buy-and-hold, and the relevant simple null.
-   - Seeds **H1 momentum / H2 short-horizon reversal / H3 volatility-state.**
-     *Batch-6 refinement:* H1 is weakest (most-arbitraged); **H3 / volatility has
-     the best evidential support** (HAR-RV, EWMA, GARCH as honest nulls) — consider
-     leading with it. Cost-inclusive always (use `check_cost_gate` / the cost model).
-   - Every trial through the **hypothesis ledger**; every promotion through the
-     **cascade + hooks + `research-validator`**; **`research-skeptic` red-teams any
-     survivor** before it is believed.
-3. **Paper-candidate forward tracking (S1)** — freeze survivors with a `frozen_at`
-   stamp; score only on strictly-later data. The one credential that can't be faked.
+Then **Wave 3** (W1 known-positive control, W2 split-key provenance, W3 cheap-heuristic
+null [uses V2], W5 stratified noise [uses V5], W6 capacity-matched clause, S18
+procedure-audit half) and **Wave 4** (DEBT-statefulness-isolation — the one large item,
+flips the 2 xfails; DEBT-S5-contemporaneous red-team).
 
-**What NOT to do:** start any Robinhood/broker execution build (edge-first gate);
-let the assistant execute / operate live / hold credentials; promote on a
-self-attested result (maker ≠ checker); run a gross-of-cost backtest or a
-non-delisting-aware universe; wire a review-disposition check as a hard cascade
-reject; or exceed the phase authorized in `STATE.md` — if a step would begin a new
-phase, touch credentials, or widen autonomy, **stop and ask.**
+**Option B — edge discovery (providers → cached MVP screen).** The verifier is now strong
+enough to *trust when it says no*. Build read-only **Tiingo + FRED** into a point-in-time,
+**delisting-aware** cache (API keys are human-supplied env vars — stop and ask how they're
+provided; **no secrets in the repo**), then the **cached MVP screen** (H1–H3 seeds;
+batch-6 evidence favors **leading with H3/volatility**), run calibration-first, every trial
+through the ledger, every promotion through the cascade + hooks + `research-validator`,
+every survivor red-teamed. Robinhood stays read-only-data-only, itself a later gate.
+
+**Recommendation:** either is defensible. Wave 2's **S1** and Option B's providers are the
+two highest-leverage next steps (both feed the eventual MVP). If the goal is to reach a
+*validated survivor* fastest (the edge-first destination), lean **Option B**, building only
+the Wave-2 items the MVP actually needs (S1, S4, V1) alongside it.
+
+**What NOT to do:** begin providers/execution or ML/forecasting without recorded go-ahead;
+wire a review check as a hard-rejecting cascade stage; run a gross-of-cost or
+non-delisting-aware backtest; let the assistant execute / hold credentials; exceed the
+phase authorized in `STATE.md`. If a step would begin a new phase, touch credentials, or
+widen autonomy, **stop and ask.**
 
 ## 9. Open decisions for the user
 
-- Proceed to **edge discovery** (providers → MVP) or finish long-tail verifier
-  items (S1/S2/S18, V/W dedup) first?
-- Confirm go-ahead to write **read-only provider adapters** (Tiingo/FRED) — and how
-  are the API keys supplied at runtime (env var names)?
-- Lead the MVP with **volatility / H3** (best-evidenced) or the full H1–H3 set?
-- Any change to the edge-first gate or the phased ladder before edge discovery starts?
+- **Wave 2** (finish the long-tail verifier) or **edge discovery** (providers → MVP) next?
+  Or a hybrid (providers + only S1/S4/V1)?
+- If edge discovery: confirm go-ahead for **read-only Tiingo/FRED adapters** — and how are
+  the API keys supplied at runtime (which env var names)?
+- Lead the MVP with **H3/volatility** (best-evidenced) or the full H1–H3 set?
+- Any change to the edge-first gate or the phased ladder before either path starts?
 
 ## 10. Standing constraints (unchanged, non-negotiable)
 
-Research/validation now; the human operates any future live capital; the assistant
-never executes live or holds credentials; autonomy is always bounded / observable /
-stoppable; no secrets in the repo; canonical labels in the research layer;
-maker ≠ checker; explicit-path git with per-commit/push approval; validation
-precedes capital; **edge before infrastructure.**
+Research/validation now; the human operates any future live capital; the assistant never
+executes live or holds credentials; autonomy is always bounded / observable / stoppable;
+no secrets in the repo; canonical labels in the research layer; maker ≠ checker;
+explicit-path git with per-commit/push approval; validation precedes capital; **edge before
+infrastructure.**
 
-## 11. Lessons worth carrying (see `tasks/lessons.md` for all — 23 dated entries)
+## 11. Lessons worth carrying (see `tasks/lessons.md` for all)
 
-The load-bearing lessons from this phase, distilled: (1) execute-and-compare assumes a **pure**
-`signal_fn` — state defeats it, needs isolation; (2) **finite-horizon leaks are
-only visible at the cutoff boundary → use exhaustive cutoffs**, never a sparse
-recomputable grid (this bit the "trusted" `check_no_lookahead`); (3) a verifier's
-own knobs (sampling, perturbation width, tolerance) are attack surfaces; (4) **gate
-against the honest null, not a fixed threshold**, and never let self-attested
-metadata disable a check; (5) NaN fails a naive numeric gate **open** — sibling
-gates must fail the same (closed) direction; (6) **recompute metrics from
-artifacts, never trust reported scalars**; (7) one-sided alarms aren't standalone
-screens — compose them; (8) binary pass/fail conflates **reject vs
-needs_human_review**; (9) for a finite-sample-biased metric use a **bootstrap null
-band** + a max-over-cells companion, not a fixed constant. Older load-bearing ones:
-verify implemented statistics against primary sources before gating; run the
-synthesis-level checker on the integrating document; large failure-prone fan-outs
-want a resumable Workflow; and — above all — **edge before infrastructure.**
-
-**The meta-lesson of this phase:** continued adversarial red-teaming pays off even
-on code that is already committed and green. Do it for every new gate.
+The load-bearing ones, distilled: **continued adversarial red-teaming pays off even on
+committed, green code** — the skeptic found a real fail-open in *every* Wave-1 gate that
+unit tests missed; do it for every new gate. **A softer disposition must never mask a
+harder one** (reject > validation_pending > needs_human_review), and a review flag must
+never short-circuit past a later reject. **Fail closed on the unverifiable** — a hash that
+would collide or hash a degenerate/empty input to a constant, a NaN/inf that defeats a
+naive `<`/`>` gate, an un-instrumented comparison, a non-bracketing sweep: all must fail
+(reject or validation_pending), never pass. **A gate's own knobs and thresholds are attack
+surfaces** — validate them (finite, in-range) and treat the tunable ones as
+pre-registration-load-bearing. **When you change control flow** (e.g. short-circuit →
+continue), audit every property/consumer that assumed the old flow. And above all —
+**edge before infrastructure.**
