@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from project_money.validation.invariants import CheckResult
+from project_money.validation.invariants import CheckResult, NEEDS_HUMAN_REVIEW, REJECT
 
 _CONF_FLOOR = 0.05  # noise floor for per-bin sd, so saturated 0/1 bins aren't hair-trigger
 _P_EPS = 1e-6
@@ -203,4 +203,9 @@ def check_calibration(
                 "necessary-not-sufficient)"
             )
 
-    return CheckResult("calibration", not reasons, reasons)
+    # S26 is a review axis (necessary-not-sufficient): substantive miscalibration
+    # is a mandatory audit, not an auto-reject; the fail-closed bad-input paths
+    # above keep the default reject disposition.
+    return CheckResult(
+        "calibration", not reasons, reasons, NEEDS_HUMAN_REVIEW if reasons else REJECT
+    )

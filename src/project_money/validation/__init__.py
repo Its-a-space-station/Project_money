@@ -7,6 +7,10 @@ held-out gate is survived), no-regression (standing invariants stay green).
 """
 
 from project_money.validation.invariants import (
+    CheckResult,
+    NEEDS_HUMAN_REVIEW,
+    REJECT,
+    FAILURE_DISPOSITIONS,
     check_data_integrity,
     check_no_lookahead,
     check_causal_transform,
@@ -33,6 +37,10 @@ from project_money.validation.prequential import prequential_log_loss, gaussian_
 from project_money.validation.cascade import Stage, StageResult, CascadeResult, run_cascade
 
 __all__ = [
+    "CheckResult",
+    "NEEDS_HUMAN_REVIEW",
+    "REJECT",
+    "FAILURE_DISPOSITIONS",
     "check_data_integrity",
     "check_no_lookahead",
     "check_causal_transform",

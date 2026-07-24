@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import math
 
-from project_money.validation.invariants import CheckResult
+from project_money.validation.invariants import CheckResult, NEEDS_HUMAN_REVIEW, REJECT
 from project_money.validation.metrics import compute_metrics
 
 
@@ -69,7 +69,11 @@ def check_directional_accuracy_plausible(
             "implausible for liquid daily forecasting; mandatory audit (needs_human_review, not "
             "auto-reject) before any label"
         )
-    return CheckResult("accuracy_plausible", not reasons, reasons)
+    # Implausible accuracy is a review flag, not an auto-reject; the fail-closed
+    # bad-input paths above keep the default reject disposition.
+    return CheckResult(
+        "accuracy_plausible", not reasons, reasons, NEEDS_HUMAN_REVIEW if reasons else REJECT
+    )
 
 
 def check_cost_gate(

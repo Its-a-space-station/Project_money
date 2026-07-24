@@ -442,6 +442,42 @@ count-weighted mean; sweep the nuisance parameter (bin count) rather than fixing
 it. Guard coverage/abstention before scoring (a model judged only on the calls it
 chooses to answer looks better than it is).
 
+### 2026-07-23 — Changing a loop's short-circuit semantics silently invalidates the properties/consumers that assumed the old termination; and an emptiness guard must be total, not truthiness-based
+
+**Context:** Adding a `needs_human_review` disposition to the evaluation cascade
+required a review flag to NOT short-circuit (so a later hard `reject` could still
+outrank it — a review must never mask a rejectable candidate). That single
+control-flow change (short-circuit-on-first-failure → continue-past-review)
+silently broke `CascadeResult.failed_stage`, which was *correct-by-accident*
+before: when any failure short-circuited, the sole non-passing stage WAS the
+determiner, so "first non-passing stage" named it. Under review-continue, multiple
+stages can be non-passing, and `failed_stage` began naming the earlier *review*
+stage instead of the actual rejecter — misreporting to the ledger/human *why* a
+candidate was rejected. Unit tests were fully green; the red-team caught it.
+Separately, the empty-cascade guard I added, `if not stages`, was truthiness-based
+— it caught empty lists but not an empty *generator* (truthy), so `run_cascade(c,
+(s for s in cfg if enabled(s)))` filtering to zero stages would promote a candidate
+that ran no checks at all (a no-op fail-open, the worst direction here).
+**Lesson:** (1) When you change a loop's termination/short-circuit behavior, audit
+EVERY property and consumer that reads the collection assuming the old flow — a
+"first matching element" property is only correct while the old termination
+guaranteed one match. Make such properties intent-explicit (here: "first
+non-passing stage whose disposition drove the label"), not position-implicit. (2)
+An emptiness / fail-closed guard must be TOTAL for the contract's inputs:
+`if not stages` is list-only; materialize (`stages = list(stages)`) so any empty
+iterable is caught — extends the fail-closed / NaN-fails-open family. (3) A
+per-failure classification (reject vs review) belongs on the RESULT, not the
+stage: a single check mixes fail-closed-reject (bad input) with a substantive
+review flag, so a blanket per-stage label would mislabel; when reject and review
+reasons can co-fire (S5), the result takes the *most severe* (reject > review).
+**Apply:** Treat any change to iteration/short-circuit/early-return as a
+consumer-audit trigger, not a local edit. Prefer materialize-then-guard for
+emptiness. Carry a failure's disposition on the check's own result and resolve
+co-occurring dispositions by most-severe-wins. And — reconfirmed a third time — a
+fresh adversarial red-team on green, "foundational" code pays off: it found 4 real
+defects here (a provenance regression, two fail-opens, an unfrozen result type)
+that the passing suite did not.
+
 ## Repeated mistakes to avoid
 
 - Treating an available API/credential as authorization to use its write paths.

@@ -180,6 +180,85 @@ delisting-aware) — the edge-discovery run; plus the long-tail verifier items b
 (S1/S2/S18, V/W dedup) as the MVP needs them. Beginning provider adapters is a new
 build step requiring explicit go-ahead per CLAUDE.md §6.
 
+## Active — research phase 1 (cont.): long-tail verifier items
+
+> A read-only dedup **inventory** (workflow `wf_eeae6712-d2a`) mapped the 23
+> remaining verifier items (V1–V8, W1–W6, S1/S2/S4/S12/S18, 4 debt items) against
+> the harness with file:line evidence. Headline: most V/W items are `partial`
+> (substrate exists, gate doesn't) — the dedup **merges** work, it does not
+> eliminate it. Net ≈17 build efforts, 1 skip, 1 half-blocked-on-data. Key dedups:
+> **V3 ≡ S2** (one vintage extension), **V6+V7** share a ranking-stability core,
+> **V2** is the shared substrate for W3/W6, **V5** for W5, **DEBT-statefulness**
+> fixes S6 + the shared causal core in one change. **DEBT-max-test-bars = SKIP**
+> (safe default already exhaustive; guard by policy, not code). **S18**
+> membership-half is blocked on the (gated) provider panel. User chose (2026-07-23):
+> **foundational item only, then re-plan.**
+
+### DEBT-review-disposition — machine-readable needs_human_review vs reject (IN PROGRESS)
+
+> Highest-stakes debt item. `CheckResult`/`StageResult` were binary and
+> `run_cascade` mapped ANY fail → `reject`; wiring S11 / the S5 returns-bar / S10 /
+> S26 (documented `needs_human_review`) as stages would hard-reject legitimate
+> strategies. Currently latent (no real check is wired into a cascade yet) — fix the
+> plumbing BEFORE anything is wired. maker≠checker + skeptic red-team.
+
+- [x] `CheckResult` gains a `disposition` field (`reject` default | `needs_human_review`),
+      validated (`__post_init__`), **frozen** (matches `Stage`; blocks post-hoc softening);
+      shared disposition constants (`REJECT`/`NEEDS_HUMAN_REVIEW`/`FAILURE_DISPOSITIONS`) in
+      `invariants.py`, exported from the package.
+- [x] Cascade tri-state: `StageResult.disposition`; `run_cascade` precedence where a review
+      flag NEVER short-circuits (so a later hard reject / exception still wins) while reject
+      & exception do; new label `needs_human_review`; `Stage.from_check` adapter; unknown
+      disposition + malformed shape fail-closed (reject / validation_pending); empty-cascade
+      → validation_pending (was fail-open to trigger_ready); `failed_stage` disposition-aware
+      (names the rejecter, not an earlier review); `review_stages` property.
+- [x] Set the correct disposition on the review checks (S11 implausible-accuracy; S5
+      returns-bar with most-severe-wins vs the R²>0.99 / persistence hard reasons; S10;
+      S26) — NOT registered as live cascade stages (debt item e respected).
+- [x] Tests: 33 in `tests/test_review_disposition.py` (precedence, from_check end-to-end,
+      per-check disposition, CheckResult validation/frozen, + 5 skeptic-round-1 regressions).
+      Suite **296 passed, 2 xfailed, deterministic** (263 baseline preserved).
+- [x] research-skeptic red-team + independent code review — round 1 confirmed the **safety
+      invariant holds** (review never masks reject/validation_pending; reject never softened;
+      unknown→reject; S5 most-severe-wins verified numerically). Skeptic found 4 real defects
+      (failed_stage provenance, empty-cascade fail-open, reason pollution, unfrozen
+      CheckResult) — ALL FIXED + regression-tested. **Round-2 re-verify: GO** — all 4 fixes
+      sound, no new holes; found 1 residual (empty *generator* still promoted — truthiness
+      guard) → hardened (`stages = list(stages)`, total empty-guard) + tested. Suite **297
+      passed, 2 xfailed, deterministic**.
+- [x] **S10 disposition split (skeptic #5) — RESOLVED (user-approved my call 2026-07-23).**
+      A strictly *inverted* (decreasing) horizon-error curve now hard-`reject`s (matching S5's
+      level-lag leakage fingerprint); a merely flat/uneven-growth curve stays
+      `needs_human_review` (possibly an unpredictable series). Most-severe-wins, mirroring S5.
+      Phase-1 S10 regressions still green.
+
+### Review — DEBT-review-disposition (2026-07-23)
+
+**Done & verified (uncommitted).** The cascade can now emit a machine-readable
+`needs_human_review` — the highest-stakes long-tail item, built foundational-first at
+the user's direction. Files: `validation/{invariants,cascade,metric_plausibility,
+forecast_diagnostics,calibration,__init__}.py` + new `tests/test_review_disposition.py`
+(34 tests). Suite **297 passed, 2 xfailed, deterministic** (263 baseline preserved).
+
+- **Safety property proven by two independent adversaries** (research-skeptic +
+  code-reviewer): a `needs_human_review` can never mask a `reject`/`validation_pending`,
+  and a genuine `reject` is never softened. Mechanism: a review flag does NOT short-circuit
+  (so a later hard reject/exception still wins), reject & exception do, unknown dispositions
+  fail-closed to reject, `CheckResult` is frozen.
+- **The red-team was load-bearing again** (phase-1 meta-lesson reconfirmed): unit tests were
+  green, yet the skeptic found 4 real defects — incl. a `failed_stage` provenance regression
+  *I introduced* by changing short-circuit→continue, and a pre-existing empty-cascade
+  fail-open (no-op promoted). All fixed; a round-2 re-verify found + closed a further residual
+  (empty-generator fail-open). Every fix has a regression test.
+- **Scope held:** the review checks emit the right disposition but are NOT registered as live
+  cascade stages (debt-e respected). The one flagged semantic decision (S10 inverted-curve →
+  reject) was surfaced and, with user approval, resolved (split; see above).
+
+**Deferred (for the re-plan):** the remaining ~16 long-tail items (V/W/S +
+statefulness-isolation + S5-contemporaneous red-team) per the `wf_eeae6712-d2a` inventory —
+**next: Wave 1 shared substrates (V2 / V5 / V6+V7 core), user-approved.** No
+providers/execution/secrets touched.
+
 ## Bootstrap (done)
 
 - [x] Convert original brief `.rtf` → `CLAUDE.md`.

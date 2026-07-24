@@ -19,15 +19,45 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
+# --- failure dispositions (shared by CheckResult and the cascade) -------------
+# A *failure*'s disposition, never an action word. ``reject`` hard-disqualifies a
+# candidate; ``needs_human_review`` routes it to human adjudication instead of an
+# auto-reject. Both are canonical research labels (docs/label_policy.md). The
+# cascade turns a stage's disposition into the matching ``CascadeResult`` label
+# (see cascade.run_cascade). ``reject`` is the safe default / fail-closed
+# direction: an unknown disposition is always hardened to ``reject``, never
+# softened to review.
+REJECT = "reject"
+NEEDS_HUMAN_REVIEW = "needs_human_review"
+FAILURE_DISPOSITIONS = frozenset({REJECT, NEEDS_HUMAN_REVIEW})
 
-@dataclass
+
+@dataclass(frozen=True)
 class CheckResult:
     """Outcome of one invariant check. ``passed`` is authoritative; ``reasons``
-    lists every violation found (empty when passed)."""
+    lists every violation found (empty when passed).
+
+    Frozen: a validated disposition cannot be softened by post-hoc assignment
+    (matching ``cascade.Stage``); build the ``reasons`` list before construction.
+
+    ``disposition`` classifies a *failure* (ignored when ``passed``): ``reject``
+    (default — a hard disqualification) or ``needs_human_review`` (a review flag a
+    human must adjudicate, not an auto-reject). It lets a cascade emit the
+    canonical ``needs_human_review`` label instead of hard-rejecting a legitimate
+    strategy. A check that mixes fail-closed input errors (reject) with a
+    substantive review flag reports the *most severe* disposition it tripped
+    (reject outranks needs_human_review)."""
 
     name: str
     passed: bool
     reasons: list[str] = field(default_factory=list)
+    disposition: str = REJECT
+
+    def __post_init__(self) -> None:
+        if self.disposition not in FAILURE_DISPOSITIONS:
+            raise ValueError(
+                f"disposition {self.disposition!r} not one of {sorted(FAILURE_DISPOSITIONS)}"
+            )
 
     def __bool__(self) -> bool:  # allow `if result:` idiom
         return self.passed

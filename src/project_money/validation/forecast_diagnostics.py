@@ -22,9 +22,11 @@ integrated regime; it never disables the FN-guarding R² checks):
   - low-autocorrelation returns: a returns R² bar (an honest returns forecast has
     R² ≈ 0.01–0.05, so a high R² is leakage).
 
-S10 (horizon monotonicity) is a **review flag**: OOS error should grow with horizon;
-a decreasing (inverted), flat, or grow-only-at-one-endpoint curve is a leakage
-fingerprint (or an unpredictable series — adjudicate with a skill-vs-null check).
+S10 (horizon monotonicity): OOS error should grow with horizon. A strictly
+*decreasing* (inverted) curve is a hard **reject** — a leakage fingerprint, like
+S5's level-lag. A merely flat or grow-only-at-one-endpoint curve is a **review
+flag** (needs_human_review): it may instead be an unpredictable series — adjudicate
+with a skill-vs-null check.
 
 Hardened over two adversarial red-team rounds (exploits kept as regression
 specimens). Research-only: evaluates artifacts; it never acts.
@@ -34,7 +36,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from project_money.validation.invariants import CheckResult
+from project_money.validation.invariants import CheckResult, NEEDS_HUMAN_REVIEW, REJECT
 
 _MIN_SAMPLE = 10
 
@@ -127,6 +129,7 @@ def check_returns_not_levels(
         )
 
     reasons: list[str] = []
+    review_added = False  # the returns-bar is the sole review flag; every other reason is a hard reject
 
     r2 = r_squared(a, b)
     if np.isfinite(r2) and r2 > max_r2:
@@ -186,14 +189,23 @@ def check_returns_not_levels(
                 "returns target — implausibly high for an honest returns forecast; mandatory audit "
                 "(route to needs_human_review, not auto-reject — a rare strong edge is possible)"
             )
+            review_added = True
 
-    return CheckResult("returns_not_levels", not reasons, reasons)
+    # Most severe wins: any hard reason (R²>max_r2, persistence/level-lag, or a
+    # fail-closed path) outranks the lone returns-bar review flag.
+    disposition = NEEDS_HUMAN_REVIEW if (review_added and len(reasons) == 1) else REJECT
+    return CheckResult("returns_not_levels", not reasons, reasons, disposition)
 
 
 def check_horizon_monotonicity(
     error_by_horizon: dict[int, float], *, min_growth: float = 0.05
 ) -> CheckResult:
-    """Flag a non-increasing OOS error-vs-horizon curve (S10) — a review flag.
+    """Flag a non-increasing OOS error-vs-horizon curve (S10).
+
+    A strictly *decreasing* (inverted) curve is a hard reject (a leakage
+    fingerprint); a flat / uneven-growth curve is a review flag
+    (``needs_human_review`` — possibly an unpredictable series). Bad-input paths
+    fail closed (reject).
 
     ``error_by_horizon`` maps horizon → OOS error (same metric across horizons).
     Flags: any decrease with horizon (inverted); or growth that is not
@@ -214,6 +226,7 @@ def check_horizon_monotonicity(
         )
 
     reasons: list[str] = []
+    inverted = False  # a strictly decreasing curve is a hard leakage fingerprint (cf. S5 level-lag)
 
     for i in range(1, len(errs)):
         if errs[i] < errs[i - 1] * (1 - 1e-9):
@@ -221,6 +234,7 @@ def check_horizon_monotonicity(
                 f"error decreases from horizon {horizons[i - 1]} ({errs[i - 1]:.4g}) to "
                 f"{horizons[i]} ({errs[i]:.4g}) — inverted horizon curve (leakage fingerprint)"
             )
+            inverted = True
             break
 
     scale = max(errs) if max(errs) > 0 else 1.0
@@ -236,4 +250,8 @@ def check_horizon_monotonicity(
             "— review flag: adjudicate with a skill-vs-null check)"
         )
 
-    return CheckResult("horizon_monotonicity", not reasons, reasons)
+    # Most severe wins: a strictly inverted curve is a hard reject (leakage
+    # fingerprint, cf. S5 level-lag); a merely flat/uneven curve is a review flag
+    # (possibly an unpredictable series); bad-input paths above already failed closed.
+    disposition = REJECT if inverted else (NEEDS_HUMAN_REVIEW if reasons else REJECT)
+    return CheckResult("horizon_monotonicity", not reasons, reasons, disposition)

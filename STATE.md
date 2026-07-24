@@ -4,7 +4,7 @@
 > constraints change — it is the first thing a new session reads after `CLAUDE.md`.
 > Not executable automation.
 
-*Last updated: 2026-07-22.*
+*Last updated: 2026-07-23.*
 
 ## Phase
 
@@ -150,6 +150,24 @@ kill-switches, journaled and instantly haltable — never unbounded or unattende
 
 ## Last checkpoint
 
+- 2026-07-23 — **Long-tail verifier re-planned; first foundational item built
+  (DEBT-review-disposition).** Verifier-hardening phase 1 is DONE **and pushed**
+  (HEAD was `cc3106e`, working tree clean — the earlier "committed, not pushed"
+  checkpoints below are since pushed). A read-only dedup **inventory** (workflow
+  `wf_eeae6712-d2a`) mapped the 23 remaining verifier items (V1–V8 / W1–W6 /
+  S1·S2·S4·S12·S18 / 4 debt) vs the harness with file:line evidence; net ≈17 build
+  efforts after dedup, 1 skip, 1 half-blocked-on-data. **User chose: build the
+  foundational item only, then re-plan.** Built the cascade's machine-readable
+  review disposition: `CheckResult.disposition` (validated + frozen),
+  disposition-aware `run_cascade` where a `needs_human_review` never short-circuits
+  so a hard `reject`/exception always outranks it (safety invariant proven by two
+  independent adversaries — research-skeptic + code-reviewer), `Stage.from_check`,
+  and S11/S5/S10/S26 emit the right disposition (NOT wired as live stages — debt-e
+  respected). Red-team found 4 real defects + 1 residual on green code — ALL fixed +
+  regression-tested. Suite: **297 passed, 2 xfailed, deterministic** (263 baseline +
+  34 new). Research-tooling only — no providers/execution/secrets. **Uncommitted;
+  pending user go-ahead on commit + the re-plan.** Deferred design question: S10
+  inverted-curve disposition (reject vs review).
 - 2026-07-23 — **S26 round-2 hardening committed (6th checkpoint).** Round-2
   re-verify confirmed the round-1 fixes closed and found residuals (MCE count-floor
   seam FN; multiple-testing FP inflation 8–13% vs 5%; degenerate-0/1; coverage) →
