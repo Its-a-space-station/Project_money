@@ -303,7 +303,14 @@ providers/execution/secrets touched.
       stage is masked as validation_pending. Not a safety failure (both are non-promoting; no
       false-negative to capital), but if a strategy's own stage can crash before a rejecting
       stage runs, the label understates severity. Track; revisit when checks are wired live.
-- [ ] V5 — macro/micro dual aggregation (pooled + per-regime; pooled-only fails).
+- [x] V5 — macro/micro dual aggregation (`regime_robustness.py`): pooled edge must be
+      corroborated per pre-registered regime. Prevalence skew → needs_human_review; <
+      min_coverage judgeable → validation_pending; malformed → reject; no pooled edge → pass.
+      **research-skeptic red-team: precedence/classification SOUND; found 1 blocking fail-open
+      (non-finite `bar` → silent PASS) + knob-laundering (min_coverage=0 / raised min_regime_n)
+      → FIXED** (validate bar finite + min_coverage∈(0,1] + min_regime_n≥1; drop inf like NaN;
+      documented all-knobs-pre-registered + the up-to-(1−min_coverage) small-regime blind spot).
+      16 tests; suite **347 passed, 2 xfailed, deterministic**. **V5 DONE (uncommitted).**
 - [ ] V6+V7 — shared ranking-stability core (threshold sweep + cross-metric stability).
 
 ## Bootstrap (done)
