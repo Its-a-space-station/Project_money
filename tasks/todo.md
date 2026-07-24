@@ -311,7 +311,43 @@ providers/execution/secrets touched.
       → FIXED** (validate bar finite + min_coverage∈(0,1] + min_regime_n≥1; drop inf like NaN;
       documented all-knobs-pre-registered + the up-to-(1−min_coverage) small-regime blind spot).
       16 tests; suite **347 passed, 2 xfailed, deterministic**. **V5 DONE (uncommitted).**
-- [ ] V6+V7 — shared ranking-stability core (threshold sweep + cross-metric stability).
+- [x] V6+V7 — shared ranking/decision-stability core (`ranking_stability.py`): `_worst_pairwise`
+      (min pairwise agreement across a swept knob) shared by both. V7 `check_cross_metric_stability`
+      (ranking reorders across ≥2 metrics → needs_human_review); V6 `check_threshold_stability`
+      (accept/reject flips across a pre-registered threshold sweep → needs_human_review). Knobs
+      validated; all-knobs-pre-registered documented. **research-skeptic: V7 = GO; V6 found 1
+      hole** (degenerate/duplicate threshold sweep → trivial PASS) → FIXED (≥2 distinct
+      thresholds) + A2 (one-sided/wide-margin sweep that never brackets the data →
+      validation_pending, the honest "couldn't verify at the operating point"). **Round-6
+      re-verify: GO** — A2 is strictly one-directional (can't open a fail-open), knife-edge caught
+      before A2, no false-positive on legit bracketing sweeps. 26 tests; suite **371 passed,
+      2 xfailed, deterministic**. **V6/V7 DONE (uncommitted).**
+
+### Review — Wave 1 shared substrates (2026-07-23)
+
+**Done & verified (V2 + V5 committed; V6/V7 uncommitted).** The three reusable substrates the
+rest of the long-tail depends on. Suite grew 263 → **371 passed, 2 xfailed, deterministic**
+(108 new tests). Every gate built maker≠checker + research-skeptic red-team to convergence.
+
+- **The disposition model is now 3-valued** (reject > validation_pending > needs_human_review),
+  extended (user-approved) when V2 needed an "unfair/incomplete comparison → validation_pending"
+  outcome. Cascade precedence verified sound across ~16 orderings + 6 skeptic rounds.
+- **V2** equal-treatment (`equal_treatment.py`) — identical split/preprocessing/equal-logged-budget;
+  fails closed on any un-logged field; collision-safe `treatment_fingerprint`. Commit `d074b6e`.
+- **V5** regime-robustness (`regime_robustness.py`) — pooled edge corroborated per pre-registered
+  regime; prevalence-skew → needs_human_review, low coverage → validation_pending. Commit `650a390`.
+- **V6/V7** ranking/decision-stability (`ranking_stability.py`) — metric-reorder / knife-edge-threshold
+  → needs_human_review. Uncommitted.
+- **The red-team stayed load-bearing:** every gate was green on my own tests, yet the skeptic found
+  a real fail-open in each (NaN-vacuous-pass, fingerprint collisions, non-finite-bar, degenerate
+  sweep) — all fixed + regression-tested. Recurring class captured as a lesson (collision-safe /
+  fail-closed hash-equality gates; NaN/knob attack surfaces).
+- **None wired as live cascade stages** (debt-e respected). A prompt-injection in an injected MCP
+  server's instructions was flagged + refused, not acted on.
+
+**Deferred (Wave 2+, need go-ahead):** V3+S2 vintage · W4 DSR · S12 MinTRL · V4 effect-size ·
+S4 persistence rung-0 · V1 window-completeness · V8 forecastability · **S1 frozen_at**; then Wave 3
+(W1/W2/W3/W5/W6 · S18 procedure-half) and Wave 4 (DEBT-statefulness-isolation · DEBT-S5 red-team).
 
 ## Bootstrap (done)
 

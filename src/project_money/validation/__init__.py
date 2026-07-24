@@ -23,6 +23,11 @@ from project_money.validation.equal_treatment import (
     treatment_fingerprint,
 )
 from project_money.validation.regime_robustness import check_regime_robustness
+from project_money.validation.ranking_stability import (
+    check_cross_metric_stability,
+    check_threshold_stability,
+    rank_agreement,
+)
 from project_money.validation.metrics import compute_metrics, deflated_sharpe
 from project_money.validation.walkforward import walk_forward_splits, Split
 from project_money.validation.split_integrity import check_temporal_holdout
@@ -53,6 +58,9 @@ __all__ = [
     "check_equal_treatment",
     "treatment_fingerprint",
     "check_regime_robustness",
+    "check_cross_metric_stability",
+    "check_threshold_stability",
+    "rank_agreement",
     "check_data_integrity",
     "check_no_lookahead",
     "check_causal_transform",
